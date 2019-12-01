@@ -10,7 +10,8 @@
 package main
 
 import (
-	rout "github.com/lisa-bella97/tech-db-forum/app/http"
+	"github.com/lisa-bella97/tech-db-forum/app"
+	"github.com/lisa-bella97/tech-db-forum/pkg/database"
 	"log"
 	"net/http"
 )
@@ -18,7 +19,9 @@ import (
 func main() {
 	log.Printf("Server started")
 
-	router := rout.NewRouter()
+	database.Init()
+
+	router := app.NewRouter()
 
 	log.Fatal(http.ListenAndServe(":5000", router))
 }
