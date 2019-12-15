@@ -38,5 +38,5 @@ RUN GO11MODULE=on
 
 RUN go get
 RUN go build main.go
-CMD ["/main"]
 EXPOSE 5000
+CMD ./main

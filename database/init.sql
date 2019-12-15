@@ -8,9 +8,9 @@ DROP TABLE IF EXISTS "forum_users" CASCADE;
 CREATE TABLE IF NOT EXISTS users
 (
     "nickname" TEXT UNIQUE PRIMARY KEY,
+    "about"    TEXT,
     "email"    TEXT UNIQUE NOT NULL,
-    "fullname" TEXT        NOT NULL,
-    "about"    TEXT
+    "fullname" TEXT        NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS forums
