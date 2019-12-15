@@ -10,7 +10,6 @@
 package app
 
 import (
-	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/lisa-bella97/tech-db-forum/app/handlers"
 	"github.com/lisa-bella97/tech-db-forum/pkg/log"
@@ -45,18 +44,7 @@ func NewRouter() *mux.Router {
 	return router
 }
 
-func Index(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello World!")
-}
-
 var routes = Routes{
-	Route{
-		"Index",
-		"GET",
-		"/api/",
-		Index,
-	},
-
 	Route{
 		"Clear",
 		strings.ToUpper("Post"),

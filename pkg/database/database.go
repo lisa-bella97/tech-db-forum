@@ -12,7 +12,6 @@ func Init() {
 			ConnConfig: pgx.ConnConfig{
 				Host: "localhost",
 				Port: 5432,
-				//Database: "postgres",
 				Database: "forum",
 				User:     "forum",
 				Password: "forum",
