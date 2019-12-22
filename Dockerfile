@@ -1,13 +1,15 @@
 FROM ubuntu:19.04
 ENV DEBIAN_FRONTEND noninteractive
+ARG CACHE_DATE=2016-01-01
 
 # Installing packets
 RUN apt-get update && apt-get upgrade -y && apt-get install -y gnupg git curl postgresql-11 postgresql-contrib
 
 # Cloning project
 USER root
-RUN git clone https://github.com/lisa-bella97/tech-db-forum.git
+#RUN git clone https://github.com/lisa-bella97/tech-db-forum.git
 WORKDIR tech-db-forum
+COPY . .
 
 # Starting PostgreSQL and creating a database
 USER postgres
