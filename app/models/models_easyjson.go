@@ -93,37 +93,44 @@ func (v *Vote) UnmarshalEasyJSON(l *jlexer.Lexer) {
 func easyjsonD2b7633eDecodeGithubComLisaBella97TechDbForumAppModels1(in *jlexer.Lexer, out *Users) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
-		if isTopLevel {
-			in.Consumed()
-		}
 		in.Skip()
-		return
-	}
-	in.Delim('{')
-	for !in.IsDelim('}') {
-		key := in.UnsafeString()
-		in.WantColon()
-		if in.IsNull() {
-			in.Skip()
+		*out = nil
+	} else {
+		in.Delim('[')
+		if *out == nil {
+			if !in.IsDelim(']') {
+				*out = make(Users, 0, 1)
+			} else {
+				*out = Users{}
+			}
+		} else {
+			*out = (*out)[:0]
+		}
+		for !in.IsDelim(']') {
+			var v1 User
+			(v1).UnmarshalEasyJSON(in)
+			*out = append(*out, v1)
 			in.WantComma()
-			continue
 		}
-		switch key {
-		default:
-			in.SkipRecursive()
-		}
-		in.WantComma()
+		in.Delim(']')
 	}
-	in.Delim('}')
 	if isTopLevel {
 		in.Consumed()
 	}
 }
 func easyjsonD2b7633eEncodeGithubComLisaBella97TechDbForumAppModels1(out *jwriter.Writer, in Users) {
-	out.RawByte('{')
-	first := true
-	_ = first
-	out.RawByte('}')
+	if in == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+		out.RawString("null")
+	} else {
+		out.RawByte('[')
+		for v2, v3 := range in {
+			if v2 > 0 {
+				out.RawByte(',')
+			}
+			(v3).MarshalEasyJSON(out)
+		}
+		out.RawByte(']')
+	}
 }
 
 // MarshalJSON supports json.Marshaler interface
@@ -1163,9 +1170,9 @@ func easyjsonD2b7633eDecodeGithubComLisaBella97TechDbForumAppModels13(in *jlexer
 		case "slug":
 			out.Slug = string(in.String())
 		case "posts":
-			out.Posts = float32(in.Float32())
+			out.Posts = int64(in.Int64())
 		case "threads":
-			out.Threads = float32(in.Float32())
+			out.Threads = int32(in.Int32())
 		default:
 			in.SkipRecursive()
 		}
@@ -1195,15 +1202,15 @@ func easyjsonD2b7633eEncodeGithubComLisaBella97TechDbForumAppModels13(out *jwrit
 		out.RawString(prefix)
 		out.String(string(in.Slug))
 	}
-	if in.Posts != 0 {
+	{
 		const prefix string = ",\"posts\":"
 		out.RawString(prefix)
-		out.Float32(float32(in.Posts))
+		out.Int64(int64(in.Posts))
 	}
-	if in.Threads != 0 {
+	{
 		const prefix string = ",\"threads\":"
 		out.RawString(prefix)
-		out.Float32(float32(in.Threads))
+		out.Int32(int32(in.Threads))
 	}
 	out.RawByte('}')
 }

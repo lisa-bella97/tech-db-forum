@@ -22,8 +22,8 @@ type Forum struct {
 	Slug string `json:"slug"`
 
 	// Общее кол-во сообщений в данном форуме.
-	Posts float32 `json:"posts,omitempty"`
+	Posts int64 `json:"posts"`
 
 	// Общее кол-во ветвей обсуждения в данном форуме.
-	Threads float32 `json:"threads,omitempty"`
+	Threads int32 `json:"threads"`
 }

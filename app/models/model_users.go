@@ -9,5 +9,5 @@
 
 package models
 
-type Users struct {
-}
+//easyjson:json
+type Users []User

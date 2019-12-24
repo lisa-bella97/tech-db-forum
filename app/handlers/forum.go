@@ -12,28 +12,28 @@ func ForumCreate(w http.ResponseWriter, r *http.Request) {
 	body, _ := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 
-	f := models.Forum{}
-	_ = f.UnmarshalJSON(body)
+	forum := models.Forum{}
+	_ = forum.UnmarshalJSON(body)
 
-	_, err := database.GetUserByNickname(f.User)
+	_, err := database.GetUserByNickname(forum.User)
 	if err != nil {
-		network.WriteErrorResponse(w, http.StatusNotFound, "Cannot find user with nickname "+f.User)
+		network.WriteErrorResponse(w, http.StatusNotFound, "Can't find user with nickname "+forum.User)
 		return
 	}
 
-	existingForum, err := database.GetForumBySlug(f.Slug)
+	existingForum, err := database.GetForumBySlug(forum.Slug)
 	if err == nil {
 		network.WriteResponse(w, http.StatusConflict, existingForum)
 		return
 	}
 
-	err = database.CreateForum(f)
+	err = database.CreateForum(forum)
 	if err != nil {
 		network.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	network.WriteResponse(w, http.StatusCreated, f)
+	network.WriteResponse(w, http.StatusCreated, forum)
 }
 
 func ForumGetOne(w http.ResponseWriter, r *http.Request) {

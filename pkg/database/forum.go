@@ -6,27 +6,27 @@ import (
 )
 
 func GetForumBySlug(slug string) (models.Forum, error) {
-	res, err := Connection.Query(`SELECT * FROM forums WHERE slug = $1`, slug)
+	rows, err := Connection.Query(`SELECT * FROM forums WHERE slug = $1`, slug)
 	if err != nil {
 		return models.Forum{}, errors.Wrap(err, "cannot get forum by slug")
 	}
-	defer res.Close()
+	defer rows.Close()
 
-	f := models.Forum{}
-
-	if res.Next() {
-		err := res.Scan(&f.Posts, &f.Slug, &f.Threads, &f.Title, &f.User)
+	if rows.Next() {
+		forum := models.Forum{}
+		err := rows.Scan(&forum.Title, &forum.User, &forum.Slug, &forum.Posts, &forum.Threads)
 		if err != nil {
 			return models.Forum{}, errors.Wrap(err, "db query result parsing error")
 		}
+		return forum, nil
 	}
 
-	return f, nil
+	return models.Forum{}, errors.New("cannot find forum by slug")
 }
 
 func CreateForum(forum models.Forum) error {
-	_, err := Connection.Exec(`INSERT INTO forums (posts, slug, threads, title, "user") VALUES ($1, $2, $3, $4, $5)`,
-		forum.Posts, forum.Slug, forum.Threads, forum.Title, forum.User)
+	_, err := Connection.Exec(`INSERT INTO forums (title, "user", slug, posts, threads) VALUES ($1, $2, $3, $4, $5)`,
+		forum.Title, forum.User, forum.Slug, forum.Posts, forum.Threads)
 	if err != nil {
 		return errors.Wrap(err, "cannot create forum")
 	}

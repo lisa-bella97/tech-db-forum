@@ -12,6 +12,7 @@ require (
 	github.com/mailru/easyjson v0.7.0
 	github.com/pkg/errors v0.8.1
 	github.com/shopspring/decimal v0.0.0-20191130220710-360f2bc03045 // indirect
+	goji.io v2.0.2+incompatible
 	golang.org/x/crypto v0.0.0-20191128160524-b544559bb6d1 // indirect
 	golang.org/x/text v0.3.2 // indirect
 )

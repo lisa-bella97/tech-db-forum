@@ -8,50 +8,50 @@ DROP TABLE IF EXISTS "forum_users" CASCADE;
 CREATE TABLE IF NOT EXISTS users
 (
     "nickname" TEXT UNIQUE PRIMARY KEY,
+    "fullname" TEXT        NOT NULL,
     "about"    TEXT,
-    "email"    TEXT UNIQUE NOT NULL,
-    "fullname" TEXT        NOT NULL
+    "email"    TEXT UNIQUE NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS forums
 (
-    "posts"   BIGINT  DEFAULT 0,
-    "slug"    TEXT UNIQUE NOT NULL,
-    "threads" INTEGER DEFAULT 0,
     "title"   TEXT        NOT NULL,
-    "user"    TEXT        NOT NULL REFERENCES users ("nickname")
+    "user"    TEXT        NOT NULL REFERENCES users ("nickname"),
+    "slug"    TEXT UNIQUE NOT NULL,
+    "posts"   BIGINT  DEFAULT 0,
+    "threads" INTEGER DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS threads
 (
     "id"      SERIAL UNIQUE PRIMARY KEY,
+    "title"   TEXT NOT NULL,
     "author"  TEXT NOT NULL REFERENCES users ("nickname"),
-    "created" TIMESTAMPTZ(3) DEFAULT now(),
     "forum"   TEXT NOT NULL REFERENCES forums ("slug"),
     "message" TEXT NOT NULL,
+    "votes"   INTEGER        DEFAULT 0,
     "slug"    TEXT,
-    "title"   TEXT NOT NULL,
-    "votes"   INTEGER        DEFAULT 0
+    "created" TIMESTAMPTZ(3) DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS posts
 (
     "id"       BIGSERIAL UNIQUE PRIMARY KEY,
-    "author"   TEXT    NOT NULL REFERENCES users ("nickname"),
-    "created"  TIMESTAMPTZ(3) DEFAULT now(),
-    "forum"    TEXT    NOT NULL REFERENCES forums ("slug"),
-    "isEdited" BOOLEAN        DEFAULT FALSE,
-    "message"  TEXT    NOT NULL,
     "parent"   INTEGER        DEFAULT 0,
+    "author"   TEXT    NOT NULL REFERENCES users ("nickname"),
+    "message"  TEXT    NOT NULL,
+    "isEdited" BOOLEAN        DEFAULT FALSE,
+    "forum"    TEXT    NOT NULL REFERENCES forums ("slug"),
     "thread"   INTEGER NOT NULL REFERENCES threads ("id"),
+    "created"  TIMESTAMPTZ(3) DEFAULT now(),
     "path"     BIGINT[]
 );
 
 CREATE TABLE IF NOT EXISTS votes
 (
-    "thread"   INT     NOT NULL REFERENCES threads ("id"),
+    "nickname" TEXT    NOT NULL,
     "voice"    INTEGER NOT NULL,
-    "nickname" TEXT    NOT NULL
+    "thread"   INT     NOT NULL REFERENCES threads ("id")
 );
 
 
