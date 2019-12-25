@@ -21,7 +21,7 @@ func GetForumBySlug(slug string) (models.Forum, error) {
 		return forum, nil
 	}
 
-	return models.Forum{}, errors.New("cannot find forum by slug")
+	return models.Forum{}, errors.New("forum not found by slug")
 }
 
 func CreateForum(forum models.Forum) error {

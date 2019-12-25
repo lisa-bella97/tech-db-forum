@@ -21,7 +21,7 @@ func GetUserByNickname(nickname string) (models.User, error) {
 		return user, nil
 	}
 
-	return models.User{}, errors.New("cannot get user by nickname")
+	return models.User{}, errors.New("user not found by nickname")
 }
 
 func GetUsersByNicknameOrEmail(nickname string, email string) (models.Users, error) {

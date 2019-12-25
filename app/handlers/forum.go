@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/gorilla/mux"
 	"github.com/lisa-bella97/tech-db-forum/app/models"
 	"github.com/lisa-bella97/tech-db-forum/pkg/database"
 	"github.com/lisa-bella97/tech-db-forum/pkg/network"
@@ -37,8 +38,14 @@ func ForumCreate(w http.ResponseWriter, r *http.Request) {
 }
 
 func ForumGetOne(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	slug := mux.Vars(r)["slug"]
+	forum, err := database.GetForumBySlug(slug)
+	if err != nil {
+		network.WriteErrorResponse(w, http.StatusNotFound, "Can't find slug "+slug)
+		return
+	}
+
+	network.WriteResponse(w, http.StatusOK, forum)
 }
 
 func ForumGetThreads(w http.ResponseWriter, r *http.Request) {
