@@ -29,21 +29,21 @@ CREATE TABLE IF NOT EXISTS threads
     "author"  TEXT NOT NULL REFERENCES users ("nickname"),
     "forum"   TEXT NOT NULL REFERENCES forums ("slug"),
     "message" TEXT NOT NULL,
-    "votes"   INTEGER        DEFAULT 0,
-    "slug"    TEXT,
-    "created" TIMESTAMPTZ(3) DEFAULT now()
+    "votes"   INTEGER                  DEFAULT 0,
+    "slug"    TEXT                     DEFAULT NULL UNIQUE,
+    "created" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS posts
 (
     "id"       BIGSERIAL UNIQUE PRIMARY KEY,
-    "parent"   INTEGER        DEFAULT 0,
+    "parent"   INTEGER                  DEFAULT 0,
     "author"   TEXT    NOT NULL REFERENCES users ("nickname"),
     "message"  TEXT    NOT NULL,
-    "isEdited" BOOLEAN        DEFAULT FALSE,
+    "isEdited" BOOLEAN                  DEFAULT FALSE,
     "forum"    TEXT    NOT NULL REFERENCES forums ("slug"),
     "thread"   INTEGER NOT NULL REFERENCES threads ("id"),
-    "created"  TIMESTAMPTZ(3) DEFAULT now(),
+    "created"  TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     "path"     BIGINT[]
 );
 

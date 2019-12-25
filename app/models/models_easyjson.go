@@ -498,7 +498,7 @@ func easyjsonD2b7633eDecodeGithubComLisaBella97TechDbForumAppModels6(in *jlexer.
 		}
 		switch key {
 		case "id":
-			out.Id = float32(in.Float32())
+			out.Id = int32(in.Int32())
 		case "title":
 			out.Title = string(in.String())
 		case "author":
@@ -508,7 +508,7 @@ func easyjsonD2b7633eDecodeGithubComLisaBella97TechDbForumAppModels6(in *jlexer.
 		case "message":
 			out.Message = string(in.String())
 		case "votes":
-			out.Votes = float32(in.Float32())
+			out.Votes = int32(in.Int32())
 		case "slug":
 			out.Slug = string(in.String())
 		case "created":
@@ -529,20 +529,14 @@ func easyjsonD2b7633eEncodeGithubComLisaBella97TechDbForumAppModels6(out *jwrite
 	out.RawByte('{')
 	first := true
 	_ = first
-	if in.Id != 0 {
+	{
 		const prefix string = ",\"id\":"
-		first = false
 		out.RawString(prefix[1:])
-		out.Float32(float32(in.Id))
+		out.Int32(int32(in.Id))
 	}
 	{
 		const prefix string = ",\"title\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.Title))
 	}
 	{
@@ -550,7 +544,7 @@ func easyjsonD2b7633eEncodeGithubComLisaBella97TechDbForumAppModels6(out *jwrite
 		out.RawString(prefix)
 		out.String(string(in.Author))
 	}
-	if in.Forum != "" {
+	{
 		const prefix string = ",\"forum\":"
 		out.RawString(prefix)
 		out.String(string(in.Forum))
@@ -560,17 +554,17 @@ func easyjsonD2b7633eEncodeGithubComLisaBella97TechDbForumAppModels6(out *jwrite
 		out.RawString(prefix)
 		out.String(string(in.Message))
 	}
-	if in.Votes != 0 {
+	{
 		const prefix string = ",\"votes\":"
 		out.RawString(prefix)
-		out.Float32(float32(in.Votes))
+		out.Int32(int32(in.Votes))
 	}
-	if in.Slug != "" {
+	{
 		const prefix string = ",\"slug\":"
 		out.RawString(prefix)
 		out.String(string(in.Slug))
 	}
-	if true {
+	{
 		const prefix string = ",\"created\":"
 		out.RawString(prefix)
 		out.Raw((in.Created).MarshalJSON())
