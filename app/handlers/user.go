@@ -38,8 +38,14 @@ func UserCreate(w http.ResponseWriter, r *http.Request) {
 }
 
 func UserGetOne(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	nickname := mux.Vars(r)["nickname"]
+	user, err := database.GetUserByNickname(nickname)
+	if err != nil {
+		network.WriteErrorResponse(w, http.StatusNotFound, "Can't find user with nickname "+nickname)
+		return
+	}
+
+	network.WriteResponse(w, http.StatusOK, user)
 }
 
 func UserUpdate(w http.ResponseWriter, r *http.Request) {
