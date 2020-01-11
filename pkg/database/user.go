@@ -26,15 +26,16 @@ func GetUserByNickname(nickname string) (models.User, error) {
 
 func GetUsersByNicknameOrEmail(nickname string, email string) (models.Users, error) {
 	var result []models.User
-	rows, err := Connection.Query(`SELECT * FROM users WHERE nickname = $1 OR email = $2`, nickname, email)
+	rows, err := Connection.Query(`SELECT * FROM users WHERE LOWER(nickname) = LOWER($1) OR LOWER(email) = LOWER($2)`,
+		nickname, email)
 	if err != nil {
 		return []models.User{}, errors.Wrap(err, "cannot get users by nickname or email")
 	}
 	defer rows.Close()
 
-	if rows.Next() {
+	for rows.Next() {
 		user := models.User{}
-		err = rows.Scan(&user.About, &user.Email, &user.Fullname, &user.Nickname)
+		err = rows.Scan(&user.Nickname, &user.Fullname, &user.About, &user.Email)
 		if err != nil {
 			return []models.User{}, errors.Wrap(err, "db query result parsing error")
 		}

@@ -13,13 +13,13 @@ package models
 type User struct {
 
 	// Имя пользователя (уникальное поле). Данное поле допускает только латиницу, цифры и знак подчеркивания. Сравнение имени регистронезависимо.
-	Nickname string `json:"nickname,omitempty"`
+	Nickname string `json:"nickname"`
 
 	// Полное имя пользователя.
 	Fullname string `json:"fullname"`
 
 	// Описание пользователя.
-	About string `json:"about,omitempty"`
+	About string `json:"about"`
 
 	// Почтовый адрес пользователя (уникальное поле).
 	Email string `json:"email"`

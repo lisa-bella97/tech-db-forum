@@ -288,23 +288,17 @@ func easyjsonD2b7633eEncodeGithubComLisaBella97TechDbForumAppModels3(out *jwrite
 	out.RawByte('{')
 	first := true
 	_ = first
-	if in.Nickname != "" {
+	{
 		const prefix string = ",\"nickname\":"
-		first = false
 		out.RawString(prefix[1:])
 		out.String(string(in.Nickname))
 	}
 	{
 		const prefix string = ",\"fullname\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.Fullname))
 	}
-	if in.About != "" {
+	{
 		const prefix string = ",\"about\":"
 		out.RawString(prefix)
 		out.String(string(in.About))
