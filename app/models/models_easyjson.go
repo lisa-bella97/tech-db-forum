@@ -1102,8 +1102,12 @@ func easyjsonD2b7633eEncodeGithubComLisaBella97TechDbForumAppModels12(out *jwrit
 	_ = first
 	if in.Message != "" {
 		const prefix string = ",\"message\":"
-		first = false
-		out.RawString(prefix[1:])
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
 		out.String(string(in.Message))
 	}
 	out.RawByte('}')

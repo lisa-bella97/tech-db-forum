@@ -18,14 +18,17 @@ func ThreadCreate(w http.ResponseWriter, r *http.Request) {
 
 	_, err := database.GetUserByNickname(thread.Author)
 	if err != nil {
-		network.WriteErrorResponse(w, http.StatusNotFound, "Can't find user with nickname "+thread.Author)
+		network.WriteErrorResponse(w, err)
 		return
 	}
 
 	forumSlug := mux.Vars(r)["slug"]
-	_, err = database.GetForumBySlug(forumSlug)
-	if err != nil {
-		network.WriteErrorResponse(w, http.StatusNotFound, "Can't find forum with slug "+forumSlug)
+	_, e := database.GetForumBySlug(forumSlug)
+	if e != nil {
+		network.WriteErrorResponse(w, &models.ModelError{
+			ErrorCode: http.StatusNotFound,
+			Message:   "Can't find forum with slug " + forumSlug,
+		})
 		return
 	}
 	thread.Forum = forumSlug
@@ -38,9 +41,12 @@ func ThreadCreate(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	err = database.CreateThread(&thread)
-	if err != nil {
-		network.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
+	e = database.CreateThread(&thread)
+	if e != nil {
+		network.WriteErrorResponse(w, &models.ModelError{
+			ErrorCode: http.StatusInternalServerError,
+			Message:   e.Error(),
+		})
 		return
 	}
 

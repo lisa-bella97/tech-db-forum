@@ -3,17 +3,14 @@ package network
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/lisa-bella97/tech-db-forum/app/models"
 	"net/http"
 )
 
-type errorResponse struct {
-	Message string `json:"message"`
-}
-
-func WriteErrorResponse(w http.ResponseWriter, errCode int, errMsg string) {
+func WriteErrorResponse(w http.ResponseWriter, modelError *models.ModelError) {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(errCode)
-	marshalBody, err := json.Marshal(errorResponse{Message: errMsg})
+	w.WriteHeader(modelError.ErrorCode)
+	marshalBody, err := json.Marshal(&modelError)
 	if err != nil {
 		fmt.Println(err)
 		return

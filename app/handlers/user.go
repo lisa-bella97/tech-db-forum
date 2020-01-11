@@ -19,7 +19,10 @@ func UserCreate(w http.ResponseWriter, r *http.Request) {
 	nickname := mux.Vars(r)["nickname"]
 	users, err := database.GetUsersByNicknameOrEmail(nickname, user.Email)
 	if err != nil {
-		network.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
+		network.WriteErrorResponse(w, &models.ModelError{
+			ErrorCode: http.StatusInternalServerError,
+			Message:   err.Error(),
+		})
 		return
 	}
 	if len(users) > 0 {
@@ -30,7 +33,10 @@ func UserCreate(w http.ResponseWriter, r *http.Request) {
 	user.Nickname = nickname
 	err = database.CreateUser(user)
 	if err != nil {
-		network.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
+		network.WriteErrorResponse(w, &models.ModelError{
+			ErrorCode: http.StatusInternalServerError,
+			Message:   err.Error(),
+		})
 		return
 	}
 
@@ -41,7 +47,7 @@ func UserGetOne(w http.ResponseWriter, r *http.Request) {
 	nickname := mux.Vars(r)["nickname"]
 	user, err := database.GetUserByNickname(nickname)
 	if err != nil {
-		network.WriteErrorResponse(w, http.StatusNotFound, "Can't find user with nickname "+nickname)
+		network.WriteErrorResponse(w, err)
 		return
 	}
 
@@ -49,6 +55,31 @@ func UserGetOne(w http.ResponseWriter, r *http.Request) {
 }
 
 func UserUpdate(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	body, _ := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+
+	user := models.User{}
+	_ = user.UnmarshalJSON(body)
+
+	if user.Email != "" {
+		exUser, e := database.GetUserByEmail(user.Email)
+		if e == nil {
+			network.WriteErrorResponse(w, &models.ModelError{
+				ErrorCode: http.StatusConflict,
+				Message:   "This email is already registered by user: "+exUser.Nickname,
+			})
+			return
+		}
+	}
+
+	nickname := mux.Vars(r)["nickname"]
+	user.Nickname = nickname
+
+	err := database.UpdateUser(&user)
+	if err != nil {
+		network.WriteErrorResponse(w, err)
+		return
+	}
+
+	network.WriteResponse(w, http.StatusOK, user)
 }
