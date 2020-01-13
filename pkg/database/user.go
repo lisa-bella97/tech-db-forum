@@ -1,7 +1,6 @@
 package database
 
 import (
-	"database/sql"
 	"github.com/lisa-bella97/tech-db-forum/app/models"
 	"github.com/pkg/errors"
 	"net/http"
@@ -11,15 +10,10 @@ func GetUserByNickname(nickname string) (models.User, *models.ModelError) {
 	row := Connection.QueryRow(`SELECT * FROM users WHERE LOWER(nickname) = LOWER($1)`, nickname)
 	user := models.User{}
 	err := row.Scan(&user.Nickname, &user.Fullname, &user.About, &user.Email)
-	if err == sql.ErrNoRows {
+	if err != nil {
 		return models.User{}, &models.ModelError{
 			ErrorCode: http.StatusNotFound,
 			Message:   "Can't find user with nickname " + nickname,
-		}
-	} else if err != nil {
-		return models.User{}, &models.ModelError{
-			ErrorCode: http.StatusNotFound,
-			Message:   "db query result parsing error: " + err.Error(),
 		}
 	}
 	return user, nil
@@ -62,7 +56,6 @@ func CreateUser(user models.User) error {
 	if err != nil {
 		return errors.Wrap(err, "cannot create user")
 	}
-
 	return nil
 }
 

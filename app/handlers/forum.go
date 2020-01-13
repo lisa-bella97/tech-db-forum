@@ -16,19 +16,20 @@ func ForumCreate(w http.ResponseWriter, r *http.Request) {
 	forum := models.Forum{}
 	_ = forum.UnmarshalJSON(body)
 
-	_, err := database.GetUserByNickname(forum.User)
+	user, err := database.GetUserByNickname(forum.User)
 	if err != nil {
 		network.WriteErrorResponse(w, err)
 		return
 	}
+	forum.User = user.Nickname
 
-	existingForum, e := database.GetForumBySlug(forum.Slug)
-	if e == nil {
+	existingForum, err := database.GetForumBySlug(forum.Slug)
+	if err == nil {
 		network.WriteResponse(w, http.StatusConflict, existingForum)
 		return
 	}
 
-	e = database.CreateForum(forum)
+	e := database.CreateForum(forum)
 	if e != nil {
 		network.WriteErrorResponse(w, &models.ModelError{
 			ErrorCode: http.StatusInternalServerError,
@@ -44,13 +45,9 @@ func ForumGetOne(w http.ResponseWriter, r *http.Request) {
 	slug := mux.Vars(r)["slug"]
 	forum, err := database.GetForumBySlug(slug)
 	if err != nil {
-		network.WriteErrorResponse(w, &models.ModelError{
-			ErrorCode: http.StatusNotFound,
-			Message:   "Can't find slug " + slug,
-		})
+		network.WriteErrorResponse(w, err)
 		return
 	}
-
 	network.WriteResponse(w, http.StatusOK, forum)
 }
 

@@ -3,33 +3,27 @@ package database
 import (
 	"github.com/lisa-bella97/tech-db-forum/app/models"
 	"github.com/pkg/errors"
+	"net/http"
 )
 
-func GetForumBySlug(slug string) (models.Forum, error) {
-	rows, err := Connection.Query(`SELECT * FROM forums WHERE slug = $1`, slug)
+func GetForumBySlug(slug string) (models.Forum, *models.ModelError) {
+	row := Connection.QueryRow(`SELECT * FROM forums WHERE LOWER(slug) = LOWER($1)`, slug)
+	forum := models.Forum{}
+	err := row.Scan(&forum.Title, &forum.User, &forum.Slug, &forum.Posts, &forum.Threads)
 	if err != nil {
-		return models.Forum{}, errors.Wrap(err, "cannot get forum by slug")
-	}
-	defer rows.Close()
-
-	if rows.Next() {
-		forum := models.Forum{}
-		err := rows.Scan(&forum.Title, &forum.User, &forum.Slug, &forum.Posts, &forum.Threads)
-		if err != nil {
-			return models.Forum{}, errors.Wrap(err, "db query result parsing error")
+		return models.Forum{}, &models.ModelError{
+			ErrorCode: http.StatusNotFound,
+			Message:   "Can't find forum with slug " + slug,
 		}
-		return forum, nil
 	}
-
-	return models.Forum{}, errors.New("forum not found by slug")
+	return forum, nil
 }
 
 func CreateForum(forum models.Forum) error {
-	_, err := Connection.Exec(`INSERT INTO forums (title, "user", slug, posts, threads) VALUES ($1, $2, $3, $4, $5)`,
-		forum.Title, forum.User, forum.Slug, forum.Posts, forum.Threads)
+	_, err := Connection.Exec(`INSERT INTO forums (title, "user", slug) VALUES ($1, $2, $3)`,
+		forum.Title, forum.User, forum.Slug)
 	if err != nil {
 		return errors.Wrap(err, "cannot create forum")
 	}
-
 	return nil
 }

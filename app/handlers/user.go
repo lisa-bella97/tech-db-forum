@@ -50,7 +50,6 @@ func UserGetOne(w http.ResponseWriter, r *http.Request) {
 		network.WriteErrorResponse(w, err)
 		return
 	}
-
 	network.WriteResponse(w, http.StatusOK, user)
 }
 

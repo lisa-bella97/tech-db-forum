@@ -23,25 +23,22 @@ func ThreadCreate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	forumSlug := mux.Vars(r)["slug"]
-	_, e := database.GetForumBySlug(forumSlug)
-	if e != nil {
-		network.WriteErrorResponse(w, &models.ModelError{
-			ErrorCode: http.StatusNotFound,
-			Message:   "Can't find forum with slug " + forumSlug,
-		})
+	_, err = database.GetForumBySlug(forumSlug)
+	if err != nil {
+		network.WriteErrorResponse(w, err)
 		return
 	}
 	thread.Forum = forumSlug
 
 	if thread.Slug != "" {
-		existingThread, err := database.GetThreadBySlug(thread.Slug)
-		if err == nil {
+		existingThread, e := database.GetThreadBySlug(thread.Slug)
+		if e == nil {
 			network.WriteResponse(w, http.StatusConflict, existingThread)
 			return
 		}
 	}
 
-	e = database.CreateThread(&thread)
+	e := database.CreateThread(&thread)
 	if e != nil {
 		network.WriteErrorResponse(w, &models.ModelError{
 			ErrorCode: http.StatusInternalServerError,
