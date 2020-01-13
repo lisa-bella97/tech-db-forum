@@ -31,8 +31,6 @@ RUN /etc/init.d/postgresql start &&\
     /etc/init.d/postgresql stop
 
 USER root
-RUN echo "local all all md5" > /etc/postgresql/11/main/pg_hba.conf &&\
-    echo "host all all 0.0.0.0/0 md5" >> /etc/postgresql/11/main/pg_hba.conf
 RUN cat database/postgresql.conf >> /etc/postgresql/11/main/postgresql.conf
 VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
 EXPOSE 5432

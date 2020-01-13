@@ -16,19 +16,20 @@ func ThreadCreate(w http.ResponseWriter, r *http.Request) {
 	thread := models.Thread{}
 	_ = thread.UnmarshalJSON(body)
 
-	_, err := database.GetUserByNickname(thread.Author)
+	user, err := database.GetUserByNickname(thread.Author)
 	if err != nil {
 		network.WriteErrorResponse(w, err)
 		return
 	}
+	thread.Author = user.Nickname
 
 	forumSlug := mux.Vars(r)["slug"]
-	_, err = database.GetForumBySlug(forumSlug)
+	forum, err := database.GetForumBySlug(forumSlug)
 	if err != nil {
 		network.WriteErrorResponse(w, err)
 		return
 	}
-	thread.Forum = forumSlug
+	thread.Forum = forum.Slug
 
 	if thread.Slug != "" {
 		existingThread, e := database.GetThreadBySlug(thread.Slug)

@@ -6,7 +6,7 @@ import (
 )
 
 func GetThreadBySlug(slug string) (models.Thread, error) {
-	rows, err := Connection.Query(`SELECT * FROM threads WHERE slug = $1`, slug)
+	rows, err := Connection.Query(`SELECT * FROM threads WHERE LOWER(slug) = LOWER($1)`, slug)
 	if err != nil {
 		return models.Thread{}, errors.Wrap(err, "cannot get thread by slug")
 	}
@@ -26,12 +26,11 @@ func GetThreadBySlug(slug string) (models.Thread, error) {
 }
 
 func CreateThread(thread *models.Thread) error {
-	err := Connection.QueryRow("INSERT INTO threads (title, author, forum, message, votes, slug) " +
-		"VALUES ($1, $2, $3, $4, $5, NULL) RETURNING id, created", thread.Title, thread.Author, thread.Forum,
-		thread.Message, thread.Votes).Scan(&thread.Id, &thread.Created)
+	err := Connection.QueryRow(`INSERT INTO threads (title, author, forum, message, slug, created)
+		VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`, thread.Title, thread.Author, thread.Forum, thread.Message,
+		thread.Slug, thread.Created).Scan(&thread.Id)
 	if err != nil {
 		return errors.Wrap(err, "cannot create thread")
 	}
-
 	return nil
 }
