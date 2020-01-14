@@ -337,37 +337,44 @@ func (v *User) UnmarshalEasyJSON(l *jlexer.Lexer) {
 func easyjsonD2b7633eDecodeGithubComLisaBella97TechDbForumAppModels4(in *jlexer.Lexer, out *Threads) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
-		if isTopLevel {
-			in.Consumed()
-		}
 		in.Skip()
-		return
-	}
-	in.Delim('{')
-	for !in.IsDelim('}') {
-		key := in.UnsafeString()
-		in.WantColon()
-		if in.IsNull() {
-			in.Skip()
+		*out = nil
+	} else {
+		in.Delim('[')
+		if *out == nil {
+			if !in.IsDelim(']') {
+				*out = make(Threads, 0, 1)
+			} else {
+				*out = Threads{}
+			}
+		} else {
+			*out = (*out)[:0]
+		}
+		for !in.IsDelim(']') {
+			var v4 Thread
+			(v4).UnmarshalEasyJSON(in)
+			*out = append(*out, v4)
 			in.WantComma()
-			continue
 		}
-		switch key {
-		default:
-			in.SkipRecursive()
-		}
-		in.WantComma()
+		in.Delim(']')
 	}
-	in.Delim('}')
 	if isTopLevel {
 		in.Consumed()
 	}
 }
 func easyjsonD2b7633eEncodeGithubComLisaBella97TechDbForumAppModels4(out *jwriter.Writer, in Threads) {
-	out.RawByte('{')
-	first := true
-	_ = first
-	out.RawByte('}')
+	if in == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+		out.RawString("null")
+	} else {
+		out.RawByte('[')
+		for v5, v6 := range in {
+			if v5 > 0 {
+				out.RawByte(',')
+			}
+			(v6).MarshalEasyJSON(out)
+		}
+		out.RawByte(']')
+	}
 }
 
 // MarshalJSON supports json.Marshaler interface

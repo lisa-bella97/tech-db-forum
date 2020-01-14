@@ -9,5 +9,5 @@
 
 package models
 
-type Threads struct {
-}
+//easyjson:json
+type Threads []Thread

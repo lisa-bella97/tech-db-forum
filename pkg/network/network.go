@@ -26,5 +26,9 @@ func WriteResponse(w http.ResponseWriter, code int, body interface{ MarshalJSON(
 		fmt.Println(err)
 		return
 	}
+	if string(marshalBody) == "null" {
+		w.Write([]byte("[]"))
+		return
+	}
 	w.Write(marshalBody)
 }

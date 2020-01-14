@@ -7,6 +7,7 @@ import (
 	"github.com/lisa-bella97/tech-db-forum/pkg/network"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 )
 
 func ForumCreate(w http.ResponseWriter, r *http.Request) {
@@ -51,17 +52,30 @@ func ForumGetOne(w http.ResponseWriter, r *http.Request) {
 }
 
 func ForumGetThreads(w http.ResponseWriter, r *http.Request) {
+	slug := mux.Vars(r)["slug"]
+
+	forum, err := database.GetForumBySlug(slug)
+	if err != nil {
+		network.WriteErrorResponse(w, err)
+		return
+	}
+	slug = forum.Slug
+
 	args := r.URL.Query()
 	limit := args.Get("limit")
-	//since := args.Get("since")
-	desc := args.Get("desc")
-
 	if limit == "" {
 		limit = "1"
 	}
-	if desc == "" {
-		desc = "false"
+	since := args.Get("since")
+	desc, _ := strconv.ParseBool(args.Get("desc"))
+
+	threads, err := database.GetForumThreads(slug, limit, since, desc)
+	if err != nil {
+		network.WriteErrorResponse(w, err)
+		return
 	}
+
+	network.WriteResponse(w, http.StatusOK, threads)
 }
 
 func ForumGetUsers(w http.ResponseWriter, r *http.Request) {
