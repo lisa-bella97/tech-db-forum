@@ -2,7 +2,6 @@ package database
 
 import (
 	"github.com/lisa-bella97/tech-db-forum/app/models"
-	"github.com/pkg/errors"
 	"net/http"
 )
 
@@ -19,11 +18,14 @@ func GetForumBySlug(slug string) (models.Forum, *models.ModelError) {
 	return forum, nil
 }
 
-func CreateForum(forum models.Forum) error {
+func CreateForum(forum models.Forum) *models.ModelError {
 	_, err := Connection.Exec(`INSERT INTO forums (title, "user", slug) VALUES ($1, $2, $3)`,
 		forum.Title, forum.User, forum.Slug)
 	if err != nil {
-		return errors.Wrap(err, "cannot create forum")
+		return &models.ModelError{
+			ErrorCode: http.StatusInternalServerError,
+			Message:   "Cannot create forum: " + err.Error(),
+		}
 	}
 	return nil
 }

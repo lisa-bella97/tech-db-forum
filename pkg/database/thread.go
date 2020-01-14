@@ -3,6 +3,7 @@ package database
 import (
 	"github.com/lisa-bella97/tech-db-forum/app/models"
 	"github.com/pkg/errors"
+	"net/http"
 )
 
 func GetThreadBySlug(slug string) (models.Thread, error) {
@@ -25,12 +26,15 @@ func GetThreadBySlug(slug string) (models.Thread, error) {
 	return models.Thread{}, errors.New("thread not found by slug")
 }
 
-func CreateThread(thread *models.Thread) error {
+func CreateThread(thread *models.Thread) *models.ModelError {
 	err := Connection.QueryRow(`INSERT INTO threads (title, author, forum, message, slug, created)
 		VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`, thread.Title, thread.Author, thread.Forum, thread.Message,
 		thread.Slug, thread.Created).Scan(&thread.Id)
 	if err != nil {
-		return errors.Wrap(err, "cannot create thread")
+		return &models.ModelError{
+			ErrorCode: http.StatusInternalServerError,
+			Message:   "Cannot create thread: " + err.Error(),
+		}
 	}
 	return nil
 }

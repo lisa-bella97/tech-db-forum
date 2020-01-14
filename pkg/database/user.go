@@ -29,12 +29,15 @@ func GetUserByEmail(email string) (models.User, error) {
 	return user, nil
 }
 
-func GetUsersByNicknameOrEmail(nickname string, email string) (models.Users, error) {
+func GetUsersByNicknameOrEmail(nickname string, email string) (models.Users, *models.ModelError) {
 	var result []models.User
 	rows, err := Connection.Query(`SELECT * FROM users WHERE LOWER(nickname) = LOWER($1) OR LOWER(email) = LOWER($2)`,
 		nickname, email)
 	if err != nil {
-		return []models.User{}, errors.Wrap(err, "cannot get users by nickname or email")
+		return []models.User{}, &models.ModelError{
+			ErrorCode: http.StatusInternalServerError,
+			Message:   "Cannot get users by nickname or email: " + err.Error(),
+		}
 	}
 	defer rows.Close()
 
@@ -42,7 +45,10 @@ func GetUsersByNicknameOrEmail(nickname string, email string) (models.Users, err
 		user := models.User{}
 		err = rows.Scan(&user.Nickname, &user.Fullname, &user.About, &user.Email)
 		if err != nil {
-			return []models.User{}, errors.Wrap(err, "db query result parsing error")
+			return []models.User{}, &models.ModelError{
+				ErrorCode: http.StatusInternalServerError,
+				Message:   "Database query result parsing error: " + err.Error(),
+			}
 		}
 		result = append(result, user)
 	}
@@ -50,11 +56,14 @@ func GetUsersByNicknameOrEmail(nickname string, email string) (models.Users, err
 	return result, nil
 }
 
-func CreateUser(user models.User) error {
+func CreateUser(user models.User) *models.ModelError {
 	_, err := Connection.Exec(`INSERT INTO users (nickname, fullname, about, email) VALUES ($1, $2, $3, $4)`,
 		user.Nickname, user.Fullname, user.About, user.Email)
 	if err != nil {
-		return errors.Wrap(err, "cannot create user")
+		return &models.ModelError{
+			ErrorCode: http.StatusInternalServerError,
+			Message:   "Cannot create user: " + err.Error(),
+		}
 	}
 	return nil
 }

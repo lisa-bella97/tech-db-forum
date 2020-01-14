@@ -29,12 +29,9 @@ func ForumCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	e := database.CreateForum(forum)
-	if e != nil {
-		network.WriteErrorResponse(w, &models.ModelError{
-			ErrorCode: http.StatusInternalServerError,
-			Message:   e.Error(),
-		})
+	err = database.CreateForum(forum)
+	if err != nil {
+		network.WriteErrorResponse(w, err)
 		return
 	}
 
@@ -43,17 +40,28 @@ func ForumCreate(w http.ResponseWriter, r *http.Request) {
 
 func ForumGetOne(w http.ResponseWriter, r *http.Request) {
 	slug := mux.Vars(r)["slug"]
+
 	forum, err := database.GetForumBySlug(slug)
 	if err != nil {
 		network.WriteErrorResponse(w, err)
 		return
 	}
+
 	network.WriteResponse(w, http.StatusOK, forum)
 }
 
 func ForumGetThreads(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	args := r.URL.Query()
+	limit := args.Get("limit")
+	//since := args.Get("since")
+	desc := args.Get("desc")
+
+	if limit == "" {
+		limit = "1"
+	}
+	if desc == "" {
+		desc = "false"
+	}
 }
 
 func ForumGetUsers(w http.ResponseWriter, r *http.Request) {

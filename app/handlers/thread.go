@@ -32,19 +32,16 @@ func ThreadCreate(w http.ResponseWriter, r *http.Request) {
 	thread.Forum = forum.Slug
 
 	if thread.Slug != "" {
-		existingThread, e := database.GetThreadBySlug(thread.Slug)
-		if e == nil {
+		existingThread, err := database.GetThreadBySlug(thread.Slug)
+		if err == nil {
 			network.WriteResponse(w, http.StatusConflict, existingThread)
 			return
 		}
 	}
 
-	e := database.CreateThread(&thread)
-	if e != nil {
-		network.WriteErrorResponse(w, &models.ModelError{
-			ErrorCode: http.StatusInternalServerError,
-			Message:   e.Error(),
-		})
+	err = database.CreateThread(&thread)
+	if err != nil {
+		network.WriteErrorResponse(w, err)
 		return
 	}
 
