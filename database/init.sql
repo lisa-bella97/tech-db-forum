@@ -43,15 +43,15 @@ CREATE TABLE posts
     "isEdited" BOOLEAN                  DEFAULT FALSE,
     "forum"    TEXT    NOT NULL REFERENCES forums ("slug"),
     "thread"   INTEGER NOT NULL REFERENCES threads ("id"),
-    "created"  TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    "path"     BIGINT[]
+    "created"  TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE votes
 (
     "nickname" TEXT    NOT NULL,
     "voice"    INTEGER NOT NULL,
-    "thread"   INT     NOT NULL REFERENCES threads ("id")
+    "thread"   INT     NOT NULL REFERENCES threads ("id"),
+    CONSTRAINT PK_votes PRIMARY KEY ("nickname", "thread")
 );
 
 

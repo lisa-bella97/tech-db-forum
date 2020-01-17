@@ -17,10 +17,10 @@ import (
 type Post struct {
 
 	// Идентификатор данного сообщения.
-	Id float32 `json:"id,omitempty"`
+	Id int64 `json:"id"`
 
 	// Идентификатор родительского сообщения (0 - корневое сообщение обсуждения).
-	Parent float32 `json:"parent,omitempty"`
+	Parent int64 `json:"parent"`
 
 	// Автор, написавший данное сообщение.
 	Author string `json:"author"`
@@ -29,14 +29,14 @@ type Post struct {
 	Message string `json:"message"`
 
 	// Истина, если данное сообщение было изменено.
-	IsEdited bool `json:"isEdited,omitempty"`
+	IsEdited bool `json:"isEdited"`
 
 	// Идентификатор форума (slug) данного сообещния.
-	Forum string `json:"forum,omitempty"`
+	Forum string `json:"forum"`
 
 	// Идентификатор ветви (id) обсуждения данного сообещния.
-	Thread float32 `json:"thread,omitempty"`
+	Thread int32 `json:"thread"`
 
 	// Дата создания сообщения на форуме.
-	Created time.Time `json:"created,omitempty"`
+	Created time.Time `json:"created"`
 }

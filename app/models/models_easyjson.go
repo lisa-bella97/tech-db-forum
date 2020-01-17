@@ -39,7 +39,7 @@ func easyjsonD2b7633eDecodeGithubComLisaBella97TechDbForumAppModels(in *jlexer.L
 		case "nickname":
 			out.Nickname = string(in.String())
 		case "voice":
-			out.Voice = float32(in.Float32())
+			out.Voice = int32(in.Int32())
 		default:
 			in.SkipRecursive()
 		}
@@ -62,7 +62,7 @@ func easyjsonD2b7633eEncodeGithubComLisaBella97TechDbForumAppModels(out *jwriter
 	{
 		const prefix string = ",\"voice\":"
 		out.RawString(prefix)
-		out.Float32(float32(in.Voice))
+		out.Int32(int32(in.Voice))
 	}
 	out.RawByte('}')
 }
@@ -686,37 +686,44 @@ func (v *Status) UnmarshalEasyJSON(l *jlexer.Lexer) {
 func easyjsonD2b7633eDecodeGithubComLisaBella97TechDbForumAppModels8(in *jlexer.Lexer, out *Posts) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
-		if isTopLevel {
-			in.Consumed()
-		}
 		in.Skip()
-		return
-	}
-	in.Delim('{')
-	for !in.IsDelim('}') {
-		key := in.UnsafeString()
-		in.WantColon()
-		if in.IsNull() {
-			in.Skip()
+		*out = nil
+	} else {
+		in.Delim('[')
+		if *out == nil {
+			if !in.IsDelim(']') {
+				*out = make(Posts, 0, 1)
+			} else {
+				*out = Posts{}
+			}
+		} else {
+			*out = (*out)[:0]
+		}
+		for !in.IsDelim(']') {
+			var v7 Post
+			(v7).UnmarshalEasyJSON(in)
+			*out = append(*out, v7)
 			in.WantComma()
-			continue
 		}
-		switch key {
-		default:
-			in.SkipRecursive()
-		}
-		in.WantComma()
+		in.Delim(']')
 	}
-	in.Delim('}')
 	if isTopLevel {
 		in.Consumed()
 	}
 }
 func easyjsonD2b7633eEncodeGithubComLisaBella97TechDbForumAppModels8(out *jwriter.Writer, in Posts) {
-	out.RawByte('{')
-	first := true
-	_ = first
-	out.RawByte('}')
+	if in == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+		out.RawString("null")
+	} else {
+		out.RawByte('[')
+		for v8, v9 := range in {
+			if v8 > 0 {
+				out.RawByte(',')
+			}
+			(v9).MarshalEasyJSON(out)
+		}
+		out.RawByte(']')
+	}
 }
 
 // MarshalJSON supports json.Marshaler interface
@@ -964,9 +971,9 @@ func easyjsonD2b7633eDecodeGithubComLisaBella97TechDbForumAppModels11(in *jlexer
 		}
 		switch key {
 		case "id":
-			out.Id = float32(in.Float32())
+			out.Id = int64(in.Int64())
 		case "parent":
-			out.Parent = float32(in.Float32())
+			out.Parent = int64(in.Int64())
 		case "author":
 			out.Author = string(in.String())
 		case "message":
@@ -976,7 +983,7 @@ func easyjsonD2b7633eDecodeGithubComLisaBella97TechDbForumAppModels11(in *jlexer
 		case "forum":
 			out.Forum = string(in.String())
 		case "thread":
-			out.Thread = float32(in.Float32())
+			out.Thread = int32(in.Int32())
 		case "created":
 			if data := in.Raw(); in.Ok() {
 				in.AddError((out.Created).UnmarshalJSON(data))
@@ -995,30 +1002,19 @@ func easyjsonD2b7633eEncodeGithubComLisaBella97TechDbForumAppModels11(out *jwrit
 	out.RawByte('{')
 	first := true
 	_ = first
-	if in.Id != 0 {
+	{
 		const prefix string = ",\"id\":"
-		first = false
 		out.RawString(prefix[1:])
-		out.Float32(float32(in.Id))
+		out.Int64(int64(in.Id))
 	}
-	if in.Parent != 0 {
+	{
 		const prefix string = ",\"parent\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.Float32(float32(in.Parent))
+		out.RawString(prefix)
+		out.Int64(int64(in.Parent))
 	}
 	{
 		const prefix string = ",\"author\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.Author))
 	}
 	{
@@ -1026,22 +1022,22 @@ func easyjsonD2b7633eEncodeGithubComLisaBella97TechDbForumAppModels11(out *jwrit
 		out.RawString(prefix)
 		out.String(string(in.Message))
 	}
-	if in.IsEdited {
+	{
 		const prefix string = ",\"isEdited\":"
 		out.RawString(prefix)
 		out.Bool(bool(in.IsEdited))
 	}
-	if in.Forum != "" {
+	{
 		const prefix string = ",\"forum\":"
 		out.RawString(prefix)
 		out.String(string(in.Forum))
 	}
-	if in.Thread != 0 {
+	{
 		const prefix string = ",\"thread\":"
 		out.RawString(prefix)
-		out.Float32(float32(in.Thread))
+		out.Int32(int32(in.Thread))
 	}
-	if true {
+	{
 		const prefix string = ",\"created\":"
 		out.RawString(prefix)
 		out.Raw((in.Created).MarshalJSON())
