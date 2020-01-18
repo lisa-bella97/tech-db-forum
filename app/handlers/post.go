@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"github.com/gorilla/mux"
-	"github.com/labstack/gommon/log"
 	"github.com/lisa-bella97/tech-db-forum/app/models"
 	"github.com/lisa-bella97/tech-db-forum/pkg/database"
 	"github.com/lisa-bella97/tech-db-forum/pkg/network"
@@ -29,7 +28,6 @@ func PostsCreate(w http.ResponseWriter, r *http.Request) {
 	_ = posts.UnmarshalJSON(body) // TODO: обрабатывать ошибки
 	if len(posts) == 0 {
 		network.WriteResponse(w, http.StatusCreated, posts)
-		log.Print("len = 0")
 		return
 	}
 
@@ -54,7 +52,6 @@ func PostsCreate(w http.ResponseWriter, r *http.Request) {
 		posts[i].Thread = thread.Id
 		posts[i].Forum = thread.Forum
 		err = database.CreatePost(&posts[i])
-		log.Print(posts[i])
 		if err != nil {
 			network.WriteErrorResponse(w, err)
 			return
