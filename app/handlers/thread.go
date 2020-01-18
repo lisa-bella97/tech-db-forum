@@ -64,8 +64,36 @@ func ThreadGetOne(w http.ResponseWriter, r *http.Request) {
 }
 
 func ThreadGetPosts(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	slugOrId := mux.Vars(r)["slug_or_id"]
+	thread, err := database.GetThreadBySlug(slugOrId)
+	if err != nil {
+		id, _ := strconv.Atoi(slugOrId)
+		thread, err = database.GetThreadById(id)
+		if err != nil {
+			network.WriteErrorResponse(w, err)
+			return
+		}
+	}
+
+	args := r.URL.Query()
+	limit := args.Get("limit")
+	if limit == "" {
+		limit = "1"
+	}
+	since := args.Get("since")
+	sort := args.Get("sort")
+	if sort == "" {
+		sort = "flat"
+	}
+	desc, _ := strconv.ParseBool(args.Get("desc"))
+
+	posts, err := database.GetThreadPosts(thread.Id, limit, since, sort, desc)
+	if err != nil {
+		network.WriteErrorResponse(w, err)
+		return
+	}
+
+	network.WriteResponse(w, http.StatusOK, posts)
 }
 
 func ThreadUpdate(w http.ResponseWriter, r *http.Request) {

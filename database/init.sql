@@ -37,13 +37,14 @@ CREATE TABLE threads
 CREATE TABLE posts
 (
     "id"       BIGSERIAL UNIQUE PRIMARY KEY,
-    "parent"   INTEGER        DEFAULT 0,
+    "parent"   BIGINT         DEFAULT 0,
     "author"   TEXT    NOT NULL REFERENCES users ("nickname"),
     "message"  TEXT    NOT NULL,
     "isEdited" BOOLEAN        DEFAULT FALSE,
     "forum"    TEXT    NOT NULL REFERENCES forums ("slug"),
     "thread"   INTEGER NOT NULL REFERENCES threads ("id"),
-    "created"  timestamptz(3) DEFAULT NOW()
+    "created"  timestamptz(3) DEFAULT NOW(),
+    "path"     BIGINT[]
 );
 
 CREATE TABLE votes

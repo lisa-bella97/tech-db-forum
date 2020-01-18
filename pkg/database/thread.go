@@ -143,3 +143,118 @@ func Vote(vote models.Vote, threadId int32) (int32, *models.ModelError) {
 
 	return newVotes, nil
 }
+
+func FlatSort(threadId int32, limit, since int, desc bool) string {
+	query := `SELECT id, parent, author, message, "isEdited", forum, thread, created FROM posts WHERE thread = ` +
+		strconv.Itoa(int(threadId))
+
+	if since != 0 {
+		if desc {
+			query += " AND id < " + strconv.Itoa(since)
+		} else {
+			query += " AND id > " + strconv.Itoa(since)
+		}
+	}
+
+	if desc {
+		query += " ORDER BY id DESC"
+	} else {
+		query += " ORDER BY id"
+	}
+
+	query += " LIMIT " + strconv.Itoa(limit)
+
+	return query
+}
+
+func TreeSort(threadId int32, limit, since int, desc bool) string {
+	query := `SELECT id, parent, author, message, "isEdited", forum, thread, created FROM posts WHERE thread = ` +
+		strconv.Itoa(int(threadId))
+
+	if since != 0 {
+		if desc {
+			query += " AND path < (SELECT path FROM posts WHERE id = " + strconv.Itoa(since) + ")"
+		} else {
+			query += " AND path > (SELECT path FROM posts WHERE id = " + strconv.Itoa(since) + ")"
+		}
+	}
+
+	if desc {
+		query += " ORDER BY path DESC"
+	} else {
+		query += " ORDER BY path"
+	}
+
+	query += " LIMIT " + strconv.Itoa(limit)
+
+	return query
+}
+
+func ParentTreeSort(threadId int32, limit, since int, desc bool) string {
+	query := `SELECT id, parent, author, message, "isEdited", forum, thread, created FROM posts WHERE path[1] 
+		IN (SELECT id FROM posts WHERE thread = ` + strconv.Itoa(int(threadId)) + " AND parent = 0"
+
+	if since != 0 {
+		if desc {
+			query += " AND path[1] < (SELECT path[1] FROM posts WHERE id = " + strconv.Itoa(since) + ")"
+		} else {
+			query += " AND path[1] > (SELECT path[1] FROM posts WHERE id = " + strconv.Itoa(since) + ")"
+		}
+	}
+
+	if desc {
+		query += " ORDER BY id DESC"
+	} else {
+		query += " ORDER BY id"
+	}
+
+	query += " LIMIT " + strconv.Itoa(limit) + ")"
+
+	if desc {
+		query += " ORDER BY path[1] DESC, path, id"
+	} else {
+		query += " ORDER BY path"
+	}
+
+	return query
+}
+
+func GetThreadPosts(threadId int32, limit, since, sort string, desc bool) (models.Posts, *models.ModelError) {
+	var result []models.Post
+	query := ""
+	limitInt, _ := strconv.Atoi(limit)
+	sinceInt, _ := strconv.Atoi(since)
+
+	switch sort {
+	case "flat":
+		query = FlatSort(threadId, limitInt, sinceInt, desc)
+	case "tree":
+		query = TreeSort(threadId, limitInt, sinceInt, desc)
+	case "parent_tree":
+		query = ParentTreeSort(threadId, limitInt, sinceInt, desc)
+	}
+
+	rows, err := Connection.Query(query)
+	if err != nil {
+		return []models.Post{}, &models.ModelError{
+			ErrorCode: http.StatusInternalServerError,
+			Message:   "Cannot get thread posts: " + err.Error(),
+		}
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		post := models.Post{}
+		err = rows.Scan(&post.Id, &post.Parent, &post.Author, &post.Message, &post.IsEdited, &post.Forum, &post.Thread,
+			&post.Created)
+		if err != nil {
+			return []models.Post{}, &models.ModelError{
+				ErrorCode: http.StatusInternalServerError,
+				Message:   "Database query result parsing error: " + err.Error(),
+			}
+		}
+		result = append(result, post)
+	}
+
+	return result, nil
+}
