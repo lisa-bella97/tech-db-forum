@@ -47,6 +47,12 @@ func ThreadCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err = database.IncrementForumThreads(thread.Forum)
+	if err != nil {
+		network.WriteErrorResponse(w, err)
+		return
+	}
+
 	network.WriteResponse(w, http.StatusCreated, thread)
 }
 
