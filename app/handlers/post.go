@@ -62,5 +62,11 @@ func PostsCreate(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	err = database.UpdateForumPosts(thread.Forum, len(posts))
+	if err != nil {
+		network.WriteErrorResponse(w, err)
+		return
+	}
+
 	network.WriteResponse(w, http.StatusCreated, posts)
 }

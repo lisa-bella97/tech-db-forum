@@ -69,3 +69,14 @@ func GetForumThreads(slug, limit, since string, desc bool) (models.Threads, *mod
 
 	return result, nil
 }
+
+func UpdateForumPosts(slug string, posts int) *models.ModelError {
+	_, err := Connection.Exec(`UPDATE forums SET posts = posts + $1 WHERE LOWER(slug) = LOWER($2)`, posts, slug)
+	if err != nil {
+		return &models.ModelError{
+			ErrorCode: http.StatusNotFound,
+			Message:   "Can't find forum with slug " + slug,
+		}
+	}
+	return nil
+}
