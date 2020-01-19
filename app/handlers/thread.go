@@ -6,6 +6,7 @@ import (
 	"github.com/lisa-bella97/tech-db-forum/pkg/database"
 	"github.com/lisa-bella97/tech-db-forum/pkg/network"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strconv"
 )
@@ -97,8 +98,32 @@ func ThreadGetPosts(w http.ResponseWriter, r *http.Request) {
 }
 
 func ThreadUpdate(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	slugOrId := mux.Vars(r)["slug_or_id"]
+	thread, err := database.GetThreadBySlug(slugOrId)
+	if err != nil {
+		id, _ := strconv.Atoi(slugOrId)
+		thread, err = database.GetThreadById(id)
+		if err != nil {
+			network.WriteErrorResponse(w, err)
+			return
+		}
+	}
+
+	body, _ := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+
+	threadToUpdate := models.Thread{}
+	_ = threadToUpdate.UnmarshalJSON(body)
+	threadToUpdate.Slug = thread.Slug
+	log.Print(threadToUpdate)
+
+	err = database.UpdateThread(&threadToUpdate)
+	if err != nil {
+		network.WriteErrorResponse(w, err)
+		return
+	}
+
+	network.WriteResponse(w, http.StatusOK, threadToUpdate)
 }
 
 func ThreadVote(w http.ResponseWriter, r *http.Request) {

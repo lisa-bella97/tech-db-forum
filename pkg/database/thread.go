@@ -258,3 +258,19 @@ func GetThreadPosts(threadId int32, limit, since, sort string, desc bool) (model
 
 	return result, nil
 }
+
+func UpdateThread(thread *models.Thread) *models.ModelError {
+	row := Connection.QueryRow(`UPDATE threads SET title = COALESCE(NULLIF($1, ''), title),
+		message  = COALESCE(NULLIF($2, ''), message) WHERE LOWER(slug) = LOWER($3)
+		RETURNING id, title, author, forum, message, votes, slug, created`, &thread.Title, &thread.Message,
+		&thread.Slug)
+	err := row.Scan(&thread.Id, &thread.Title, &thread.Author, &thread.Forum, &thread.Message, &thread.Votes,
+		&thread.Slug, &thread.Created)
+	if err != nil {
+		return &models.ModelError{
+			ErrorCode: http.StatusNotFound,
+			Message:   "Can't find thread with slug " + thread.Slug,
+		}
+	}
+	return nil
+}
