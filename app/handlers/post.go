@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 func PostGetOne(w http.ResponseWriter, r *http.Request) {
@@ -48,9 +49,12 @@ func PostsCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	created := time.Now()
+
 	for i := range posts {
 		posts[i].Thread = thread.Id
 		posts[i].Forum = thread.Forum
+		posts[i].Created = created
 		err = database.CreatePost(&posts[i])
 		if err != nil {
 			network.WriteErrorResponse(w, err)
