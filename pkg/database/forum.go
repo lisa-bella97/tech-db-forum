@@ -75,9 +75,9 @@ func GetForumUsers(slug, limit, since string, desc bool) (models.Users, *models.
 
 	query := "SELECT * FROM users WHERE nickname IN (SELECT forum_user FROM forum_users WHERE LOWER(forum) = LOWER($1))"
 	if since != "" && desc {
-		query += " AND LOWER(nickname) < LOWER(" + since + ")"
+		query += " AND LOWER(nickname) < LOWER('" + since + "')"
 	} else if since != "" {
-		query += " AND LOWER(nickname) > LOWER(" + since + ")"
+		query += " AND LOWER(nickname) > LOWER('" + since + "')"
 	}
 	query += " ORDER BY nickname"
 	if desc {
