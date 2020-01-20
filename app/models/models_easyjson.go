@@ -616,13 +616,13 @@ func easyjsonD2b7633eDecodeGithubComLisaBella97TechDbForumAppModels7(in *jlexer.
 		}
 		switch key {
 		case "user":
-			out.User = float32(in.Float32())
+			out.User = int32(in.Int32())
 		case "forum":
-			out.Forum = float32(in.Float32())
+			out.Forum = int32(in.Int32())
 		case "thread":
-			out.Thread = float32(in.Float32())
+			out.Thread = int32(in.Int32())
 		case "post":
-			out.Post = float32(in.Float32())
+			out.Post = int64(in.Int64())
 		default:
 			in.SkipRecursive()
 		}
@@ -640,22 +640,22 @@ func easyjsonD2b7633eEncodeGithubComLisaBella97TechDbForumAppModels7(out *jwrite
 	{
 		const prefix string = ",\"user\":"
 		out.RawString(prefix[1:])
-		out.Float32(float32(in.User))
+		out.Int32(int32(in.User))
 	}
 	{
 		const prefix string = ",\"forum\":"
 		out.RawString(prefix)
-		out.Float32(float32(in.Forum))
+		out.Int32(int32(in.Forum))
 	}
 	{
 		const prefix string = ",\"thread\":"
 		out.RawString(prefix)
-		out.Float32(float32(in.Thread))
+		out.Int32(int32(in.Thread))
 	}
 	{
 		const prefix string = ",\"post\":"
 		out.RawString(prefix)
-		out.Float32(float32(in.Post))
+		out.Int64(int64(in.Post))
 	}
 	out.RawByte('}')
 }
