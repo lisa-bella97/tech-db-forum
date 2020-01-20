@@ -889,41 +889,41 @@ func easyjsonD2b7633eEncodeGithubComLisaBella97TechDbForumAppModels10(out *jwrit
 	out.RawByte('{')
 	first := true
 	_ = first
-	if in.Post != nil {
+	{
 		const prefix string = ",\"post\":"
-		first = false
 		out.RawString(prefix[1:])
-		(*in.Post).MarshalEasyJSON(out)
+		if in.Post == nil {
+			out.RawString("null")
+		} else {
+			(*in.Post).MarshalEasyJSON(out)
+		}
 	}
-	if in.Author != nil {
+	{
 		const prefix string = ",\"author\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
+		out.RawString(prefix)
+		if in.Author == nil {
+			out.RawString("null")
 		} else {
-			out.RawString(prefix)
+			(*in.Author).MarshalEasyJSON(out)
 		}
-		(*in.Author).MarshalEasyJSON(out)
 	}
-	if in.Thread != nil {
+	{
 		const prefix string = ",\"thread\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
+		out.RawString(prefix)
+		if in.Thread == nil {
+			out.RawString("null")
 		} else {
-			out.RawString(prefix)
+			(*in.Thread).MarshalEasyJSON(out)
 		}
-		(*in.Thread).MarshalEasyJSON(out)
 	}
-	if in.Forum != nil {
+	{
 		const prefix string = ",\"forum\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
+		out.RawString(prefix)
+		if in.Forum == nil {
+			out.RawString("null")
 		} else {
-			out.RawString(prefix)
+			(*in.Forum).MarshalEasyJSON(out)
 		}
-		(*in.Forum).MarshalEasyJSON(out)
 	}
 	out.RawByte('}')
 }

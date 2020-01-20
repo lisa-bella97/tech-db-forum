@@ -61,7 +61,7 @@ func ThreadGetOne(w http.ResponseWriter, r *http.Request) {
 	thread, err := database.GetThreadBySlug(slugOrId)
 	if err != nil {
 		id, _ := strconv.Atoi(slugOrId)
-		thread, err = database.GetThreadById(id)
+		thread, err = database.GetThreadById(int32(id))
 		if err != nil {
 			network.WriteErrorResponse(w, err)
 			return
@@ -75,7 +75,7 @@ func ThreadGetPosts(w http.ResponseWriter, r *http.Request) {
 	thread, err := database.GetThreadBySlug(slugOrId)
 	if err != nil {
 		id, _ := strconv.Atoi(slugOrId)
-		thread, err = database.GetThreadById(id)
+		thread, err = database.GetThreadById(int32(id))
 		if err != nil {
 			network.WriteErrorResponse(w, err)
 			return
@@ -108,7 +108,7 @@ func ThreadUpdate(w http.ResponseWriter, r *http.Request) {
 	thread, err := database.GetThreadBySlug(slugOrId)
 	if err != nil {
 		id, _ := strconv.Atoi(slugOrId)
-		thread, err = database.GetThreadById(id)
+		thread, err = database.GetThreadById(int32(id))
 		if err != nil {
 			network.WriteErrorResponse(w, err)
 			return
@@ -137,7 +137,7 @@ func ThreadVote(w http.ResponseWriter, r *http.Request) {
 	thread, err := database.GetThreadBySlug(slugOrId)
 	if err != nil {
 		id, _ := strconv.Atoi(slugOrId)
-		thread, err = database.GetThreadById(id)
+		thread, err = database.GetThreadById(int32(id))
 		if err != nil {
 			network.WriteErrorResponse(w, err)
 			return

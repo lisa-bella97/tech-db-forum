@@ -7,10 +7,10 @@ import (
 	"strconv"
 )
 
-func GetThreadBySlug(slug string) (models.Thread, *models.ModelError) {
+func GetThreadBySlug(slug string) (*models.Thread, *models.ModelError) {
 	rows, err := Connection.Query(`SELECT * FROM threads WHERE LOWER(slug) = LOWER($1)`, slug)
 	if err != nil {
-		return models.Thread{}, &models.ModelError{
+		return nil, &models.ModelError{
 			ErrorCode: http.StatusInternalServerError,
 			Message:   "Cannot get thread by slug: " + err.Error(),
 		}
@@ -22,24 +22,24 @@ func GetThreadBySlug(slug string) (models.Thread, *models.ModelError) {
 		err := rows.Scan(&thread.Id, &thread.Title, &thread.Author, &thread.Forum, &thread.Message,
 			&thread.Votes, &thread.Slug, &thread.Created)
 		if err != nil {
-			return models.Thread{}, &models.ModelError{
+			return nil, &models.ModelError{
 				ErrorCode: http.StatusInternalServerError,
 				Message:   "Database query result parsing error: " + err.Error(),
 			}
 		}
-		return thread, nil
+		return &thread, nil
 	}
 
-	return models.Thread{}, &models.ModelError{
+	return nil, &models.ModelError{
 		ErrorCode: http.StatusNotFound,
 		Message:   "Can't find thread with slug " + slug,
 	}
 }
 
-func GetThreadById(id int) (models.Thread, *models.ModelError) {
+func GetThreadById(id int32) (*models.Thread, *models.ModelError) {
 	rows, err := Connection.Query(`SELECT * FROM threads WHERE id = $1`, id)
 	if err != nil {
-		return models.Thread{}, &models.ModelError{
+		return nil, &models.ModelError{
 			ErrorCode: http.StatusInternalServerError,
 			Message:   "Cannot get thread by ID: " + err.Error(),
 		}
@@ -51,17 +51,17 @@ func GetThreadById(id int) (models.Thread, *models.ModelError) {
 		err := rows.Scan(&thread.Id, &thread.Title, &thread.Author, &thread.Forum, &thread.Message,
 			&thread.Votes, &thread.Slug, &thread.Created)
 		if err != nil {
-			return models.Thread{}, &models.ModelError{
+			return nil, &models.ModelError{
 				ErrorCode: http.StatusInternalServerError,
 				Message:   "Database query result parsing error: " + err.Error(),
 			}
 		}
-		return thread, nil
+		return &thread, nil
 	}
 
-	return models.Thread{}, &models.ModelError{
+	return nil, &models.ModelError{
 		ErrorCode: http.StatusNotFound,
-		Message:   "Can't find thread with ID " + strconv.Itoa(id),
+		Message:   "Can't find thread with ID " + strconv.Itoa(int(id)),
 	}
 }
 

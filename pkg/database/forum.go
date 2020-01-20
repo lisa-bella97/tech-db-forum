@@ -5,17 +5,17 @@ import (
 	"net/http"
 )
 
-func GetForumBySlug(slug string) (models.Forum, *models.ModelError) {
+func GetForumBySlug(slug string) (*models.Forum, *models.ModelError) {
 	row := Connection.QueryRow(`SELECT * FROM forums WHERE LOWER(slug) = LOWER($1)`, slug)
 	forum := models.Forum{}
 	err := row.Scan(&forum.Title, &forum.User, &forum.Slug, &forum.Posts, &forum.Threads)
 	if err != nil {
-		return models.Forum{}, &models.ModelError{
+		return nil, &models.ModelError{
 			ErrorCode: http.StatusNotFound,
 			Message:   "Can't find forum with slug " + slug,
 		}
 	}
-	return forum, nil
+	return &forum, nil
 }
 
 func CreateForum(forum models.Forum) *models.ModelError {

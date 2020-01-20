@@ -8,12 +8,22 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
 func PostGetOne(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	id, _ := strconv.Atoi(mux.Vars(r)["id"])
+	args := r.URL.Query()
+	related := strings.Split(args.Get("related"), ",")
+
+	result, err := database.GetPostFull(int64(id), related)
+	if err != nil {
+		network.WriteErrorResponse(w, err)
+		return
+	}
+
+	network.WriteResponse(w, http.StatusOK, result)
 }
 
 func PostUpdate(w http.ResponseWriter, r *http.Request) {
@@ -36,7 +46,7 @@ func PostsCreate(w http.ResponseWriter, r *http.Request) {
 	thread, err := database.GetThreadBySlug(slugOrId)
 	if err != nil {
 		id, _ := strconv.Atoi(slugOrId)
-		thread, err = database.GetThreadById(id)
+		thread, err = database.GetThreadById(int32(id))
 		if err != nil {
 			network.WriteErrorResponse(w, err)
 			return

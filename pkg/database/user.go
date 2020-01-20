@@ -6,17 +6,17 @@ import (
 	"net/http"
 )
 
-func GetUserByNickname(nickname string) (models.User, *models.ModelError) {
+func GetUserByNickname(nickname string) (*models.User, *models.ModelError) {
 	row := Connection.QueryRow(`SELECT * FROM users WHERE LOWER(nickname) = LOWER($1)`, nickname)
 	user := models.User{}
 	err := row.Scan(&user.Nickname, &user.Fullname, &user.About, &user.Email)
 	if err != nil {
-		return models.User{}, &models.ModelError{
+		return nil, &models.ModelError{
 			ErrorCode: http.StatusNotFound,
 			Message:   "Can't find user with nickname " + nickname,
 		}
 	}
-	return user, nil
+	return &user, nil
 }
 
 func GetUserByEmail(email string) (models.User, error) {

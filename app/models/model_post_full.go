@@ -10,12 +10,13 @@
 package models
 
 // Полная информация о сообщении, включая связанные объекты.
+//easyjson:json
 type PostFull struct {
-	Post *Post `json:"post,omitempty"`
+	Post *Post `json:"post"`
 
-	Author *User `json:"author,omitempty"`
+	Author *User `json:"author"`
 
-	Thread *Thread `json:"thread,omitempty"`
+	Thread *Thread `json:"thread"`
 
-	Forum *Forum `json:"forum,omitempty"`
+	Forum *Forum `json:"forum"`
 }
