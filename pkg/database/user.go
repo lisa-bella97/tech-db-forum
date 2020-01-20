@@ -68,6 +68,7 @@ func CreateUser(user models.User) *models.ModelError {
 	return nil
 }
 
+// TODO: заменить на UserUpdate
 func UpdateUser(user *models.User) *models.ModelError {
 	row := Connection.QueryRow(`UPDATE users SET fullname = COALESCE(NULLIF($2, ''), fullname),
 		about = COALESCE(NULLIF($3, ''), about), email = COALESCE(NULLIF($4, ''), email)

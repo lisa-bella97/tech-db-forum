@@ -27,20 +27,26 @@ func PostGetOne(w http.ResponseWriter, r *http.Request) {
 }
 
 func PostUpdate(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	body, _ := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+
+	postUpdate := models.PostUpdate{}
+	_ = postUpdate.UnmarshalJSON(body)
+
+	id, _ := strconv.Atoi(mux.Vars(r)["id"])
+
+	post, err := database.UpdatePost(&postUpdate, int64(id))
+	if err != nil {
+		network.WriteErrorResponse(w, err)
+		return
+	}
+
+	network.WriteResponse(w, http.StatusOK, post)
 }
 
 func PostsCreate(w http.ResponseWriter, r *http.Request) {
 	body, _ := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
-
-	posts := models.Posts{}
-	_ = posts.UnmarshalJSON(body) // TODO: обрабатывать ошибки
-	if len(posts) == 0 {
-		network.WriteResponse(w, http.StatusCreated, posts)
-		return
-	}
 
 	slugOrId := mux.Vars(r)["slug_or_id"]
 	thread, err := database.GetThreadBySlug(slugOrId)
@@ -51,6 +57,13 @@ func PostsCreate(w http.ResponseWriter, r *http.Request) {
 			network.WriteErrorResponse(w, err)
 			return
 		}
+	}
+
+	posts := models.Posts{}
+	_ = posts.UnmarshalJSON(body) // TODO: обрабатывать ошибки
+	if len(posts) == 0 {
+		network.WriteResponse(w, http.StatusCreated, posts)
+		return
 	}
 
 	_, err = database.GetUserByNickname(posts[0].Author)
