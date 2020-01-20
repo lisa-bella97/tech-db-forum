@@ -108,26 +108,25 @@ func GetPostFull(id int64, related []string) (*models.PostFull, *models.ModelErr
 }
 
 func UpdatePost(postUpdate *models.PostUpdate, id int64) (*models.Post, *models.ModelError) {
-	/*post, err := GetPostById(id)
+	post, err := GetPostById(id)
 	if err != nil {
 		return nil, err
 	}
 
 	if len(postUpdate.Message) == 0 {
 		return post, nil
-	}*/
+	}
 
-	var post models.Post
-
-	err := Connection.QueryRow(`UPDATE posts SET message = COALESCE($1, message),
+	e := Connection.QueryRow(`UPDATE posts SET message = COALESCE($1, message),
 		"isEdited" = ($1 IS NOT NULL AND $1 <> message) WHERE id = $2
 		RETURNING id, parent, author, message, "isEdited", forum, thread, created`, &postUpdate.Message, id).Scan(&post.Id,
 		&post.Parent, &post.Author, &post.Message, &post.IsEdited, &post.Forum, &post.Thread, &post.Created)
-	if err != nil {
+	if e != nil {
 		return nil, &models.ModelError{
 			ErrorCode: http.StatusNotFound,
 			Message:   "Cannot get post with ID " + strconv.Itoa(int(id)),
 		}
 	}
-	return &post, nil
+
+	return post, nil
 }

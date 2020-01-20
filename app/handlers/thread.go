@@ -150,6 +150,12 @@ func ThreadVote(w http.ResponseWriter, r *http.Request) {
 	vote := models.Vote{}
 	_ = vote.UnmarshalJSON(body)
 
+	_, err = database.GetUserByNickname(vote.Nickname)
+	if err != nil {
+		network.WriteErrorResponse(w, err)
+		return
+	}
+
 	newVotes, err := database.Vote(vote, thread.Id)
 	if err != nil {
 		network.WriteErrorResponse(w, err)
