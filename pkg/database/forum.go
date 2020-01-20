@@ -70,6 +70,45 @@ func GetForumThreads(slug, limit, since string, desc bool) (models.Threads, *mod
 	return result, nil
 }
 
+func GetForumUsers(slug, limit, since string, desc bool) (models.Users, *models.ModelError) {
+	var result []models.User
+
+	query := "SELECT * FROM users WHERE nickname IN (SELECT forum_user FROM forum_users WHERE LOWER(forum) = LOWER($1))"
+	if since != "" && desc {
+		query += " AND LOWER(nickname) < LOWER(" + since + ")"
+	} else if since != "" {
+		query += " AND LOWER(nickname) > LOWER(" + since + ")"
+	}
+	query += " ORDER BY nickname"
+	if desc {
+		query += " DESC"
+	}
+	query += " LIMIT $2"
+
+	rows, err := Connection.Query(query, slug, limit)
+	if err != nil {
+		return []models.User{}, &models.ModelError{
+			ErrorCode: http.StatusInternalServerError,
+			Message:   "Cannot get forum users: " + err.Error(),
+		}
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		user := models.User{}
+		err = rows.Scan(&user.Nickname, &user.Fullname, &user.About, &user.Email)
+		if err != nil {
+			return []models.User{}, &models.ModelError{
+				ErrorCode: http.StatusInternalServerError,
+				Message:   "Database query result parsing error: " + err.Error(),
+			}
+		}
+		result = append(result, user)
+	}
+
+	return result, nil
+}
+
 func IncrementForumThreads(slug string) *models.ModelError {
 	_, err := Connection.Exec(`UPDATE forums SET threads = threads + 1 WHERE LOWER(slug) = LOWER($1)`, slug)
 	if err != nil {

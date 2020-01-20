@@ -79,6 +79,28 @@ func ForumGetThreads(w http.ResponseWriter, r *http.Request) {
 }
 
 func ForumGetUsers(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+	slug := mux.Vars(r)["slug"]
+
+	forum, err := database.GetForumBySlug(slug)
+	if err != nil {
+		network.WriteErrorResponse(w, err)
+		return
+	}
+	slug = forum.Slug
+
+	args := r.URL.Query()
+	limit := args.Get("limit")
+	if limit == "" {
+		limit = "1"
+	}
+	since := args.Get("since")
+	desc, _ := strconv.ParseBool(args.Get("desc"))
+
+	users, err := database.GetForumUsers(slug, limit, since, desc)
+	if err != nil {
+		network.WriteErrorResponse(w, err)
+		return
+	}
+
+	network.WriteResponse(w, http.StatusOK, users)
 }

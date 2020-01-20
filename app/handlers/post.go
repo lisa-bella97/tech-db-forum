@@ -68,5 +68,7 @@ func PostsCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	database.UpdateForumUsers(posts)
+
 	network.WriteResponse(w, http.StatusCreated, posts)
 }

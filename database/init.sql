@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS CITEXT;
+
 DROP TABLE IF EXISTS "users" CASCADE;
 DROP TABLE IF EXISTS "forums" CASCADE;
 DROP TABLE IF EXISTS "threads" CASCADE;
@@ -7,7 +9,7 @@ DROP TABLE IF EXISTS "forum_users" CASCADE;
 
 CREATE TABLE users
 (
-    "nickname" TEXT UNIQUE PRIMARY KEY,
+    "nickname" CITEXT UNIQUE PRIMARY KEY,
     "fullname" TEXT        NOT NULL,
     "about"    TEXT,
     "email"    TEXT UNIQUE NOT NULL
@@ -16,7 +18,7 @@ CREATE TABLE users
 CREATE TABLE forums
 (
     "title"   TEXT        NOT NULL,
-    "user"    TEXT        NOT NULL REFERENCES users ("nickname"),
+    "user"    CITEXT      NOT NULL REFERENCES users ("nickname"),
     "slug"    TEXT UNIQUE NOT NULL,
     "posts"   BIGINT  DEFAULT 0,
     "threads" INTEGER DEFAULT 0
@@ -25,10 +27,10 @@ CREATE TABLE forums
 CREATE TABLE threads
 (
     "id"      SERIAL UNIQUE PRIMARY KEY,
-    "title"   TEXT NOT NULL,
-    "author"  TEXT NOT NULL REFERENCES users ("nickname"),
-    "forum"   TEXT NOT NULL REFERENCES forums ("slug"),
-    "message" TEXT NOT NULL,
+    "title"   TEXT   NOT NULL,
+    "author"  CITEXT NOT NULL REFERENCES users ("nickname"),
+    "forum"   TEXT   NOT NULL REFERENCES forums ("slug"),
+    "message" TEXT   NOT NULL,
     "votes"   INTEGER        DEFAULT 0,
     "slug"    TEXT,
     "created" timestamptz(3) DEFAULT NOW()
@@ -38,7 +40,7 @@ CREATE TABLE posts
 (
     "id"       BIGSERIAL UNIQUE PRIMARY KEY,
     "parent"   BIGINT         DEFAULT 0,
-    "author"   TEXT    NOT NULL REFERENCES users ("nickname"),
+    "author"   CITEXT  NOT NULL REFERENCES users ("nickname"),
     "message"  TEXT    NOT NULL,
     "isEdited" BOOLEAN        DEFAULT FALSE,
     "forum"    TEXT    NOT NULL REFERENCES forums ("slug"),
@@ -49,7 +51,7 @@ CREATE TABLE posts
 
 CREATE TABLE votes
 (
-    "nickname" TEXT    NOT NULL,
+    "nickname" CITEXT  NOT NULL,
     "voice"    INTEGER NOT NULL,
     "thread"   INT     NOT NULL REFERENCES threads ("id"),
     CONSTRAINT PK_votes PRIMARY KEY ("nickname", "thread")
@@ -58,8 +60,8 @@ CREATE TABLE votes
 
 CREATE TABLE forum_users
 (
-    "forum_user" TEXT COLLATE ucs_basic NOT NULL,
-    "forum"      TEXT                   NOT NULL
+    "forum_user" CITEXT COLLATE ucs_basic NOT NULL,
+    "forum"      TEXT                     NOT NULL
 );
 
 DROP INDEX IF EXISTS idx_users_nickname;

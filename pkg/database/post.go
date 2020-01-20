@@ -18,3 +18,9 @@ func CreatePost(post *models.Post) *models.ModelError {
 	}
 	return nil
 }
+
+func UpdateForumUsers(posts []models.Post) {
+	for _, p := range posts {
+		_, _ = Connection.Exec(`INSERT INTO forum_users VALUES ($1, $2) ON CONFLICT DO NOTHING`, p.Author, p.Forum)
+	}
+}
