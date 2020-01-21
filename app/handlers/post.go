@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 )
 
 func PostGetOne(w http.ResponseWriter, r *http.Request) {
@@ -49,14 +48,10 @@ func PostsCreate(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	slugOrId := mux.Vars(r)["slug_or_id"]
-	thread, err := database.GetThreadBySlug(slugOrId)
+	thread, err := database.GetThread(slugOrId)
 	if err != nil {
-		id, _ := strconv.Atoi(slugOrId)
-		thread, err = database.GetThreadById(int32(id))
-		if err != nil {
-			network.WriteErrorResponse(w, err)
-			return
-		}
+		network.WriteErrorResponse(w, err)
+		return
 	}
 
 	posts := models.Posts{}
@@ -72,26 +67,19 @@ func PostsCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	created := time.Now()
-
-	for i := range posts {
-		posts[i].Thread = thread.Id
-		posts[i].Forum = thread.Forum
-		posts[i].Created = created
-		err = database.CreatePost(&posts[i])
-		if err != nil {
-			network.WriteErrorResponse(w, err)
-			return
-		}
-	}
-
-	err = database.UpdateForumPosts(thread.Forum, len(posts))
+	insertedPosts, err := database.CreatePosts(&posts, thread)
 	if err != nil {
 		network.WriteErrorResponse(w, err)
 		return
 	}
 
-	database.UpdateForumUsers(posts)
+	err = database.UpdateForumPosts(thread.Forum, len(*insertedPosts))
+	if err != nil {
+		network.WriteErrorResponse(w, err)
+		return
+	}
 
-	network.WriteResponse(w, http.StatusCreated, posts)
+	database.UpdateForumUsers(*insertedPosts)
+
+	network.WriteResponse(w, http.StatusCreated, insertedPosts)
 }

@@ -1,17 +1,14 @@
 package database
 
 import (
+	"fmt"
 	"github.com/jackc/pgx"
 	"github.com/lisa-bella97/tech-db-forum/app/models"
 	"net/http"
 	"strconv"
+	"strings"
+	"time"
 )
-
-const postID = `
-	SELECT id
-	FROM posts
-	WHERE id = $1 AND thread IN (SELECT id FROM threads WHERE thread <> $2)
-`
 
 func parentExitsInOtherThread(parent int64, threadID int32) bool {
 	var id int64
@@ -42,23 +39,75 @@ func CheckParent(parent int64, threadId int32) *models.ModelError {
 	return nil
 }
 
-func CreatePost(post *models.Post) *models.ModelError {
-	e := CheckParent(post.Parent, post.Thread)
-	if e != nil {
-		return e
+func CreatePosts(posts *models.Posts, thread *models.Thread) (*models.Posts, *models.ModelError) {
+	dateTimeTemplate := "2006-01-02 15:04:05"
+	created := time.Now().Format(dateTimeTemplate)
+	query := strings.Builder{}
+	query.WriteString(`INSERT INTO posts (parent, author, message, "isEdited", forum, thread, created, path) VALUES `)
+	queryBody := `(%d, '%s', '%s', %t, '%s', %d, '%s', (SELECT path FROM posts WHERE id = %d) ||
+		(SELECT last_value FROM posts_id_seq)),`
+	postsNumber := len(*posts)
+
+	for i, post := range *posts {
+		e := CheckParent(post.Parent, thread.Id)
+		if e != nil {
+			return nil, e
+		}
+		temp := fmt.Sprintf(queryBody, post.Parent, post.Author, post.Message, post.IsEdited, thread.Forum, thread.Id,
+			created, post.Parent)
+		// удаление запятой в конце queryBody для последнего подзапроса
+		if i == postsNumber-1 {
+			temp = temp[:len(temp)-1]
+		}
+		query.WriteString(temp)
 	}
 
-	err := Connection.QueryRow(`INSERT INTO posts (parent, author, message, "isEdited", forum, thread, created, path)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, (SELECT path FROM posts WHERE id = $1) ||
-		(SELECT last_value FROM posts_id_seq)) RETURNING id, created`, post.Parent, post.Author, post.Message,
-		post.IsEdited, post.Forum, post.Thread, post.Created).Scan(&post.Id, &post.Created)
-	if err != nil {
-		return &models.ModelError{
+	query.WriteString(" RETURNING author, created, forum, id, message, parent, thread")
+
+	tx, txErr := Connection.Begin()
+	if txErr != nil {
+		return nil, &models.ModelError{
 			ErrorCode: http.StatusInternalServerError,
-			Message:   "Cannot create post: " + err.Error(),
+			Message:   txErr.Error(),
 		}
 	}
-	return nil
+	defer tx.Rollback()
+
+	rows, err := tx.Query(query.String())
+	defer rows.Close()
+	if err != nil {
+		return nil, &models.ModelError{
+			ErrorCode: http.StatusInternalServerError,
+			Message:   err.Error(),
+		}
+	}
+
+	insertPosts := models.Posts{}
+	for rows.Next() {
+		post := models.Post{}
+		rows.Scan(
+			&post.Author,
+			&post.Created,
+			&post.Forum,
+			&post.Id,
+			&post.Message,
+			&post.Parent,
+			&post.Thread,
+		)
+		insertPosts = append(insertPosts, post)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil, &models.ModelError{
+			ErrorCode: http.StatusInternalServerError,
+			Message:   err.Error(),
+		}
+	}
+
+	tx.Commit()
+
+	return &insertPosts, nil
 }
 
 func UpdateForumUsers(posts []models.Post) {

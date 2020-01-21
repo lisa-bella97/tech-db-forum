@@ -47,39 +47,25 @@ func ThreadCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = database.IncrementForumThreads(thread.Forum)
-	if err != nil {
-		network.WriteErrorResponse(w, err)
-		return
-	}
-
 	network.WriteResponse(w, http.StatusCreated, thread)
 }
 
 func ThreadGetOne(w http.ResponseWriter, r *http.Request) {
 	slugOrId := mux.Vars(r)["slug_or_id"]
-	thread, err := database.GetThreadBySlug(slugOrId)
+	thread, err := database.GetThread(slugOrId)
 	if err != nil {
-		id, _ := strconv.Atoi(slugOrId)
-		thread, err = database.GetThreadById(int32(id))
-		if err != nil {
-			network.WriteErrorResponse(w, err)
-			return
-		}
+		network.WriteErrorResponse(w, err)
+		return
 	}
 	network.WriteResponse(w, http.StatusOK, thread)
 }
 
 func ThreadGetPosts(w http.ResponseWriter, r *http.Request) {
 	slugOrId := mux.Vars(r)["slug_or_id"]
-	thread, err := database.GetThreadBySlug(slugOrId)
+	thread, err := database.GetThread(slugOrId)
 	if err != nil {
-		id, _ := strconv.Atoi(slugOrId)
-		thread, err = database.GetThreadById(int32(id))
-		if err != nil {
-			network.WriteErrorResponse(w, err)
-			return
-		}
+		network.WriteErrorResponse(w, err)
+		return
 	}
 
 	args := r.URL.Query()
@@ -105,14 +91,10 @@ func ThreadGetPosts(w http.ResponseWriter, r *http.Request) {
 
 func ThreadUpdate(w http.ResponseWriter, r *http.Request) {
 	slugOrId := mux.Vars(r)["slug_or_id"]
-	thread, err := database.GetThreadBySlug(slugOrId)
+	thread, err := database.GetThread(slugOrId)
 	if err != nil {
-		id, _ := strconv.Atoi(slugOrId)
-		thread, err = database.GetThreadById(int32(id))
-		if err != nil {
-			network.WriteErrorResponse(w, err)
-			return
-		}
+		network.WriteErrorResponse(w, err)
+		return
 	}
 
 	body, _ := ioutil.ReadAll(r.Body)
@@ -134,14 +116,10 @@ func ThreadUpdate(w http.ResponseWriter, r *http.Request) {
 
 func ThreadVote(w http.ResponseWriter, r *http.Request) {
 	slugOrId := mux.Vars(r)["slug_or_id"]
-	thread, err := database.GetThreadBySlug(slugOrId)
+	thread, err := database.GetThread(slugOrId)
 	if err != nil {
-		id, _ := strconv.Atoi(slugOrId)
-		thread, err = database.GetThreadById(int32(id))
-		if err != nil {
-			network.WriteErrorResponse(w, err)
-			return
-		}
+		network.WriteErrorResponse(w, err)
+		return
 	}
 
 	body, _ := ioutil.ReadAll(r.Body)

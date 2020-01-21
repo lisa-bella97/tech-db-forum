@@ -108,6 +108,45 @@ CREATE INDEX IF NOT EXISTS idx_posts_thread_id_created ON posts (id, created, th
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_votes_thread_nickname ON votes (thread, nickname);
 
+DROP FUNCTION IF EXISTS insert_vote();
+CREATE OR REPLACE FUNCTION insert_vote() RETURNS TRIGGER AS $insert_vote$
+BEGIN
+    UPDATE threads
+    SET votes = votes + NEW.voice
+    WHERE id = NEW.thread;
+    RETURN NEW;
+END;
+$insert_vote$
+    LANGUAGE plpgsql;
+DROP TRIGGER IF EXISTS insert_vote ON votes;
+CREATE TRIGGER insert_vote BEFORE INSERT ON votes FOR EACH ROW EXECUTE PROCEDURE insert_vote();
+
+DROP FUNCTION IF EXISTS update_vote();
+CREATE OR REPLACE FUNCTION update_vote() RETURNS TRIGGER AS $update_vote$
+BEGIN
+    UPDATE threads
+    SET votes = votes - OLD.voice + NEW.voice
+    WHERE id = NEW.thread;
+    RETURN NEW;
+END;
+$update_vote$
+    LANGUAGE plpgsql;
+DROP TRIGGER IF EXISTS update_vote ON votes;
+CREATE TRIGGER update_vote BEFORE UPDATE ON votes FOR EACH ROW EXECUTE PROCEDURE update_vote();
+
+DROP FUNCTION IF EXISTS thread_insert();
+CREATE OR REPLACE FUNCTION thread_insert() RETURNS trigger AS $thread_insert$
+BEGIN
+    UPDATE forums
+    SET threads = threads + 1
+    WHERE slug = NEW.forum;
+    RETURN NULL;
+END;
+$thread_insert$ LANGUAGE plpgsql;
+DROP trigger if exists thread_insert ON threads;
+CREATE TRIGGER thread_insert AFTER INSERT ON threads
+    FOR EACH ROW EXECUTE PROCEDURE thread_insert();
+
 DROP FUNCTION IF EXISTS add_forum_user();
 CREATE OR REPLACE FUNCTION add_forum_user() RETURNS TRIGGER AS
 $add_forum_user$

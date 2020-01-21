@@ -2,7 +2,6 @@ package database
 
 import (
 	"github.com/lisa-bella97/tech-db-forum/app/models"
-	"github.com/pkg/errors"
 	"net/http"
 	"strconv"
 )
@@ -65,6 +64,29 @@ func GetThreadById(id int32) (*models.Thread, *models.ModelError) {
 	}
 }
 
+func isNumber(str string) bool {
+	_, err := strconv.Atoi(str)
+	return err == nil
+}
+
+func GetThread(param string) (*models.Thread, *models.ModelError) {
+	var err *models.ModelError
+	var thread *models.Thread
+
+	if isNumber(param) {
+		id, _ := strconv.Atoi(param)
+		thread, err = GetThreadById(int32(id))
+	} else {
+		thread, err = GetThreadBySlug(param)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return thread, nil
+}
+
 func CreateThread(thread *models.Thread) *models.ModelError {
 	err := Connection.QueryRow(`INSERT INTO threads (title, author, forum, message, slug, created)
 		VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`, thread.Title, thread.Author, thread.Forum, thread.Message,
@@ -78,40 +100,10 @@ func CreateThread(thread *models.Thread) *models.ModelError {
 	return nil
 }
 
-func GetVoteByNicknameAndThreadId(nickname string, threadId int32) (models.Vote, error) {
-	rows, err := Connection.Query("SELECT * FROM votes WHERE nickname = $1 AND thread = $2", nickname, threadId)
-	if err != nil {
-		return models.Vote{}, err
-	}
-	defer rows.Close()
-
-	if rows.Next() {
-		vote := models.Vote{}
-		var threadId int32
-		err := rows.Scan(&vote.Nickname, &vote.Voice, &threadId)
-		if err != nil {
-			return models.Vote{}, err
-		}
-		return vote, nil
-	}
-
-	return models.Vote{}, errors.New("Can't find vote")
-}
-
 // Возвращает новую оценку ветви обсуждения
 func Vote(vote models.Vote, threadId int32) (int32, *models.ModelError) {
-	voiceDiff := vote.Voice
-
 	_, err := Connection.Exec(`INSERT INTO votes VALUES ($1, $2, $3)`, vote.Nickname, vote.Voice, threadId)
 	if err != nil {
-		voteBeforeUpdate, err := GetVoteByNicknameAndThreadId(vote.Nickname, threadId)
-		if err != nil {
-			return 0, &models.ModelError{
-				ErrorCode: http.StatusInternalServerError,
-				Message:   err.Error(),
-			}
-		}
-
 		_, err = Connection.Exec(`UPDATE votes SET voice = $1 WHERE thread = $2 AND nickname = $3`,
 			vote.Voice, threadId, vote.Nickname)
 		if err != nil {
@@ -120,24 +112,15 @@ func Vote(vote models.Vote, threadId int32) (int32, *models.ModelError) {
 				Message:   "Can't find user with nickname " + vote.Nickname,
 			}
 		}
-
-		// если меняем отзыв, то нужно откатить предыдущий и накатить новый, поэтому ±2
-		if vote.Voice == -1 && vote.Voice != voteBeforeUpdate.Voice {
-			voiceDiff = -2
-		} else if vote.Voice == 1 && vote.Voice != voteBeforeUpdate.Voice {
-			voiceDiff = 2
-		} else if vote.Voice == voteBeforeUpdate.Voice {
-			voiceDiff = 0
-		}
 	}
 
 	var newVotes int32
-	err = Connection.QueryRow(`UPDATE threads SET votes = votes+$1 WHERE id = $2 RETURNING votes`, voiceDiff,
-		threadId).Scan(&newVotes)
+
+	err = Connection.QueryRow("SELECT votes FROM threads WHERE id = $1", threadId).Scan(&newVotes)
 	if err != nil {
 		return 0, &models.ModelError{
-			ErrorCode: http.StatusNotFound,
-			Message:   "Can't find thread with ID " + strconv.Itoa(int(threadId)),
+			ErrorCode: http.StatusInternalServerError,
+			Message:   "Can't find votes from thread with ID " + strconv.Itoa(int(threadId)) + ": " + err.Error(),
 		}
 	}
 
@@ -191,29 +174,30 @@ func TreeSort(threadId int32, limit, since int, desc bool) string {
 }
 
 func ParentTreeSort(threadId int32, limit, since int, desc bool) string {
-	query := `SELECT id, parent, author, message, "isEdited", forum, thread, created FROM posts WHERE path[1] 
-		IN (SELECT id FROM posts WHERE thread = ` + strconv.Itoa(int(threadId)) + " AND parent = 0"
+	query := `SELECT id, parent, author, message, "isEdited", forum, thread, created FROM posts p WHERE
+		p.thread = ` + strconv.Itoa(int(threadId)) + ` AND path[1] IN (SELECT p2.path[1] FROM posts p2 WHERE
+		p2.thread = ` + strconv.Itoa(int(threadId)) + " AND p2.parent = 0"
 
 	if since != 0 {
 		if desc {
-			query += " AND path[1] < (SELECT path[1] FROM posts WHERE id = " + strconv.Itoa(since) + ")"
+			query += " AND p2.path[1] < (SELECT p3.path[1] FROM posts p3 WHERE p3.id = " + strconv.Itoa(since) + ")"
 		} else {
-			query += " AND path[1] > (SELECT path[1] FROM posts WHERE id = " + strconv.Itoa(since) + ")"
+			query += " AND p2.path[1] > (SELECT p3.path[1] FROM posts p3 WHERE p3.id = " + strconv.Itoa(since) + ")"
 		}
 	}
 
 	if desc {
-		query += " ORDER BY id DESC"
+		query += " ORDER BY p2.path DESC"
 	} else {
-		query += " ORDER BY id"
+		query += " ORDER BY p2.path"
 	}
 
 	query += " LIMIT " + strconv.Itoa(limit) + ")"
 
 	if desc {
-		query += " ORDER BY path[1] DESC, path, id"
+		query += " ORDER BY p.path[1] DESC, p.path[2:]"
 	} else {
-		query += " ORDER BY path"
+		query += " ORDER BY p.path"
 	}
 
 	return query
