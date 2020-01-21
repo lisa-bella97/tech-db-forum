@@ -12,7 +12,6 @@ package app
 import (
 	"github.com/gorilla/mux"
 	"github.com/lisa-bella97/tech-db-forum/app/handlers"
-	"github.com/lisa-bella97/tech-db-forum/pkg/log"
 	"net/http"
 	"strings"
 )
@@ -32,7 +31,7 @@ func NewRouter() *mux.Router {
 		var handler http.Handler
 		handler = route.HandlerFunc
 
-		handler = log.Logger(handler, route.Name)
+		//handler = log.Logger(handler, route.Name)
 
 		router.
 			Methods(route.Method).
